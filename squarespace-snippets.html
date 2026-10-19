@@ -1,0 +1,33 @@
+<!--
+  Chart Studio: Squarespace code block snippets.
+  In each snippet, replace thisjames with your GitHub username (it appears twice).
+  Paste into a Code Block with "Display Source" switched off.
+-->
+
+
+<!-- 1. FREE VERSION (public page) -->
+<iframe id="a4a-chart" src="https://thisjames.github.io/a4a-chart/?embed=1&mode=free"
+  title="Birth chart" loading="lazy"
+  style="width:100%;height:1500px;border:0;display:block"></iframe>
+<script>
+window.addEventListener('message', function (e) {
+  if (e.origin !== 'https://thisjames.github.io') return;
+  if (e.data && e.data.type === 'a4a-chart-height') {
+    document.getElementById('a4a-chart').style.height = e.data.height + 'px';
+  }
+});
+</script>
+
+
+<!-- 2. MEMBER VERSION (password-protected page) -->
+<iframe id="a4a-chart" src="https://thisjames.github.io/a4a-chart/?embed=1&mode=member"
+  title="Birth chart" loading="lazy"
+  style="width:100%;height:1700px;border:0;display:block"></iframe>
+<script>
+window.addEventListener('message', function (e) {
+  if (e.origin !== 'https://thisjames.github.io') return;
+  if (e.data && e.data.type === 'a4a-chart-height') {
+    document.getElementById('a4a-chart').style.height = e.data.height + 'px';
+  }
+});
+</script>
