@@ -18,7 +18,7 @@ A birth chart generator for Astrology for Artists and Becoming Cosmic. Everythin
 ## Page addresses
 
 - `index.html` shows the full prototype with its notes.
-- `index.html?embed=1` hides the header and notes, for embedding on the website.
+- `index.html?embed=1` hides the prototype notes, for embedding on the website. Add `&header=0` to hide the header too.
 - `index.html?embed=1&mode=free` fixes the free version.
 - `index.html?embed=1&mode=member` fixes the member version.
 
