@@ -1,18 +1,44 @@
 <!--
   Chart Studio: Squarespace code block snippets.
   Paste into a Code Block (HTML, "Display Source" off).
-  The frame covers the whole browser window, so none of the site's own header,
-  footer or background shows on this page. The tool scrolls inside it.
+  On the live page the frame covers the whole browser window, so none of the
+  site's own header, footer or background shows. Inside the Squarespace editor
+  it stays a normal block, so the editor controls remain usable.
+  Logged-in editors may only see "Chart Studio loads here": check in a private window.
 -->
 
 
 <!-- 1. FREE VERSION (public page) -->
-<iframe src="https://thisjames.github.io/a4a-chart/?embed=1&mode=free"
-  title="Chart Studio, Astrology for Artists"
-  style="position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483647;background:#fcf5f7"></iframe>
+<div id="a4a-chart-host" style="padding:24px;font-family:Georgia,serif">Chart Studio loads here.</div>
+<script>
+(function () {
+  var host = document.getElementById('a4a-chart-host');
+  var f = document.createElement('iframe');
+  f.src = 'https://thisjames.github.io/a4a-chart/?embed=1&mode=free';
+  f.title = 'Chart Studio, Astrology for Artists';
+  var live = window.self === window.top; // false inside the Squarespace editor
+  f.style.cssText = live
+    ? 'position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483647;background:#fcf5f7'
+    : 'width:100%;height:900px;border:0;display:block';
+  host.textContent = '';
+  host.appendChild(f);
+})();
+</script>
 
 
-<!-- 2. MEMBER VERSION (password-protected page) -->
-<iframe src="https://thisjames.github.io/a4a-chart/?embed=1&mode=member"
-  title="Chart Studio, Astrology for Artists"
-  style="position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483647;background:#fcf5f7"></iframe>
+<!-- 2. MEMBER VERSION (password-protected page): identical, with mode=member -->
+<div id="a4a-chart-host" style="padding:24px;font-family:Georgia,serif">Chart Studio loads here.</div>
+<script>
+(function () {
+  var host = document.getElementById('a4a-chart-host');
+  var f = document.createElement('iframe');
+  f.src = 'https://thisjames.github.io/a4a-chart/?embed=1&mode=member';
+  f.title = 'Chart Studio, Astrology for Artists';
+  var live = window.self === window.top;
+  f.style.cssText = live
+    ? 'position:fixed;inset:0;width:100%;height:100%;border:0;z-index:2147483647;background:#fcf5f7'
+    : 'width:100%;height:900px;border:0;display:block';
+  host.textContent = '';
+  host.appendChild(f);
+})();
+</script>
