@@ -366,9 +366,9 @@ export const ASPECT_INFO = {
 
 export const GUIDE = [
   { layer: 'planets', title: 'The planets are the what',
-    body: 'Each planet is a part of you that wants expression: the Sun your core, the Moon your needs, Venus what you love, Mars how you act.' },
+    body: 'Each planet is a part of you that wants expression. Start with three: the Sun, the Moon and the sign that was rising on the horizon when you were born.' },
   { layer: 'signs', title: 'The signs are the how',
-    body: 'The twelve signs around the outer band colour each planet. The same Venus loves differently in fiery Aries than in watery Pisces.' },
+    body: 'The twelve signs sit around the outer band, coloured by their element: fire, earth, air or water. A sign is the manner of a planet. The same Venus loves differently in fiery Aries than in watery Pisces.' },
   { layer: 'houses', title: 'The houses are the where',
     body: 'The twelve numbered sections inside the band are areas of life. They turn with the clock, which is why your birth time matters.' },
   { layer: 'aspects', title: 'The lines are conversations',
