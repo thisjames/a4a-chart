@@ -33,8 +33,8 @@ export function loadPdfLibs() {
 }
 
 // ---------- pieces ----------
-function wheelGroup(chart, x, y, size) {
-  const svg = renderWheelV2(chart, { mode: 'print' });
+function wheelGroup(chart, x, y, size, mono = false) {
+  const svg = renderWheelV2(chart, { mode: 'print', mono });
   const vb = svg.match(/viewBox="([^"]+)"/)[1].split(' ').map(Number);
   const inner = svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '').replace(/<title>[^<]*<\/title>/g, '');
   const k = size / vb[2];
@@ -123,7 +123,7 @@ export function posterSVG(chart, name, o, assets) {
     const table = withTable ? positionsTable(chart, m, 0, W - 2 * m, 3, tableSize, pal) : null;
     const reserveBottom = (H - footTop) + s * 0.07 + (table ? table.height + s * 0.06 : 0);
     const size = Math.min(W - 2 * m, H - y - reserveBottom);
-    out.push(wheelGroup(chart, (W - size) / 2, y, size));
+    out.push(wheelGroup(chart, (W - size) / 2, y, size, o.ink === 'black'));
     if (table) {
       const ty = y + size + s * 0.06;
       out.push(positionsTable(chart, m, ty, W - 2 * m, 3, tableSize, pal).svg);
@@ -132,7 +132,7 @@ export function posterSVG(chart, name, o, assets) {
   } else {
     const top = m + logoH + s * 0.06;
     const size = Math.min(footTop - top - s * 0.04, W * 0.46);
-    out.push(wheelGroup(chart, m, top, size));
+    out.push(wheelGroup(chart, m, top, size, o.ink === 'black'));
     const x = m + size + s * 0.07, cw = W - x - m;
     let y = top + s * 0.07;
     out.push(t(x, y, s * 0.075, L.name, { family: DISPLAY }));

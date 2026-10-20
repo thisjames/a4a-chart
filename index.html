@@ -15,6 +15,8 @@
   --page: #FAF3EE; --panel: #FFFBF8; --rule: #E8D8CF;
   --ink: #1D1D1B; --ink-2: #5C4A4D; --control: #8F7377; --pink: #F1D5DB; --tint: #FAE3E8;
   --red: #C32414; --red-deep: #8E1A0E; --on-red: #F6F6F6;
+  /* becoming cosmic box: placeholder greens from the design system, to be replaced with the Circle theme's greens */
+  --cosmic-bg: #095C00; --cosmic-hover: #0D7E00; --cosmic-ink: #F6F6F6; --cosmic-soft: #D9EAD3;
   --display: "1790 Royal Printing", "EB Garamond", "Crimson Pro", Georgia, serif;
   --text: "Crimson Pro", Georgia, "Times New Roman", serif;
   color-scheme: light;
@@ -54,13 +56,23 @@ header.top { border-bottom: 1px solid var(--rule); }
 header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 28px; padding-block: 12px; }
 .brand { display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--ink); }
 .brand img { height: 44px; width: auto; display: block; }
-.modes { display: flex; border: 1px solid var(--control); }
-.modes button { min-height: 44px; padding: 0 20px; border: 0; background: transparent; cursor: pointer; font-family: var(--display); font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; }
-.modes button[aria-pressed="true"] { background: var(--ink); color: var(--on-red); }
+/* Discover → Explore → Study: a three-step progression. Done steps fill in ink, the current step in red. */
+.modes { display: flex; align-items: center; gap: 4px; }
+.modes button { min-height: 44px; padding: 0 8px; display: inline-flex; align-items: center; gap: 10px; border: 0; background: transparent; cursor: pointer; font-family: var(--display); font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-2); }
+.modes .num { width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--control); font: 14px/1 var(--text); letter-spacing: 0; color: var(--ink); flex: none; }
+.modes .ml { padding: 4px 0; border-bottom: 2px solid transparent; }
+.modes button.done .num { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+.modes button.done { color: var(--ink); }
+.modes button[aria-current="step"] { color: var(--ink); }
+.modes button[aria-current="step"] .num { background: var(--red); border-color: var(--red); color: var(--on-red); }
+.modes button[aria-current="step"] .ml { border-bottom-color: var(--red); }
+.modes button:hover .ml { border-bottom-color: var(--control); }
+.modes .arr { width: 28px; height: 10px; fill: none; stroke: var(--control); stroke-width: 1.2; flex: none; }
+.modes .arr.done { stroke: var(--ink); }
 nav.actions { display: flex; flex-wrap: wrap; gap: 4px 20px; }
 nav.actions button { background: none; border: 0; padding: 10px 0; cursor: pointer; font-family: var(--display); font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-2); }
 nav.actions button:hover { color: var(--red); }
-@media (max-width: 700px) { .modes { order: 3; width: 100%; } .modes button { flex: 1; padding: 0 8px; font-size: 10px; letter-spacing: 0.18em; } }
+@media (max-width: 700px) { .modes { order: 3; width: 100%; justify-content: space-between; gap: 0; } .modes button { padding: 0 2px; gap: 6px; font-size: 10px; letter-spacing: 0.16em; } .modes .arr { width: 18px; } }
 
 /* create screen */
 .create { display: flex; flex-wrap: wrap; gap: 48px 112px; align-items: flex-start; padding-block: 72px 64px; }
@@ -162,11 +174,11 @@ details.method summary { cursor: pointer; color: var(--red); }
 .invite h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.15; }
 .invite p { margin: 0; font-size: 16px; color: #5C4A4D; }
 .invite .btn { border-color: #8F7377; }
-.cosmic { background: #000000; color: #F1F1EC; padding: 26px; display: flex; flex-direction: column; gap: 14px; }
+.cosmic { background: var(--cosmic-bg); color: var(--cosmic-ink); padding: 26px; display: flex; flex-direction: column; gap: 14px; }
 .cosmic img { width: 170px; height: auto; display: block; }
-.cosmic p { margin: 0; font-size: 18px; line-height: 1.5; color: #C9C9C2; }
-.cosmic a { color: #F1F1EC; border-color: #F1F1EC; width: fit-content; }
-.cosmic a:hover { background: #1D1D1B; color: #F1F1EC; }
+.cosmic p { margin: 0; font-size: 18px; line-height: 1.5; color: var(--cosmic-soft); }
+.cosmic a { color: var(--cosmic-ink); border-color: var(--cosmic-ink); width: fit-content; }
+.cosmic a:hover { background: var(--cosmic-hover); color: var(--cosmic-ink); }
 .kept { font-size: 15px; color: var(--ink-2); }
 .kept ul { margin: 6px 0 0; padding-left: 18px; }
 
@@ -197,6 +209,10 @@ legend { font-family: var(--display); font-size: 11px; letter-spacing: 0.26em; t
 .opts { display: flex; flex-wrap: wrap; gap: 6px; }
 .opts label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--rule); padding: 6px 10px; cursor: pointer; font-size: 15px; min-height: 40px; }
 .opts input { accent-color: var(--red); margin: 0; }
+.dview { display: flex; border-bottom: 1px solid var(--rule); gap: 24px; }
+.dview button { min-height: 44px; border: 0; background: transparent; cursor: pointer; padding: 0; font-family: var(--display); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-2); }
+.dview button[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--red); }
+#card-preview svg { width: min(100%, 460px); height: auto; max-height: none; aspect-ratio: 1; }
 .preview { background: var(--page); display: flex; align-items: center; justify-content: center; padding: 16px; min-height: 360px; }
 .preview svg { max-width: 100%; max-height: 520px; width: auto; height: auto; box-shadow: 0 1px 0 var(--rule); background: #FFFFFF; }
 .status { font-size: 15px; color: var(--ink-2); }
@@ -209,6 +225,7 @@ ul.saved li small { color: var(--ink-2); display: block; font-size: 14px; }
 /* internal bar: temporary, for testing only */
 .internal { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: #1D1D1B; color: #F1F1EC; font: 13px/1.3 system-ui, sans-serif; }
 .internal .in { max-width: 1440px; margin: 0 auto; padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+#grounds { display: inline-flex; flex-wrap: wrap; gap: 6px; }
 .internal b { font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; color: #C9C9C2; }
 .internal .sw { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px solid #55554F; color: #F1F1EC; padding: 4px 10px 4px 4px; cursor: pointer; min-height: 32px; }
 .internal .sw i { width: 22px; height: 22px; display: block; border: 1px solid #55554F; }
@@ -216,7 +233,7 @@ ul.saved li small { color: var(--ink-2); display: block; font-size: 14px; }
 .internal label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
 .internal .hide { margin-left: auto; background: transparent; border: 0; color: #C9C9C2; cursor: pointer; text-decoration: underline; }
 :root.no-internal .internal { display: none; }
-@media (max-width: 700px) { .internal .in { flex-wrap: nowrap; overflow-x: auto; padding: 6px 10px; gap: 8px; } .internal .sw { white-space: nowrap; min-height: 30px; } .internal b { white-space: nowrap; } .internal label { white-space: nowrap; } nav.actions { gap: 0 16px; } }
+@media (max-width: 700px) { #grounds { flex-wrap: nowrap; } .internal .in { flex-wrap: nowrap; overflow-x: auto; padding: 6px 10px; gap: 8px; } .internal .sw { white-space: nowrap; min-height: 30px; } .internal b { white-space: nowrap; } .internal label { white-space: nowrap; } nav.actions { gap: 0 16px; } }
 </style>
 </head>
 <body>
@@ -227,10 +244,12 @@ ul.saved li small { color: var(--ink-2); display: block; font-size: 14px; }
       <img src="sigil.png" alt="Astrology for Artists">
       <span class="eyebrow">Chart Explorer</span>
     </a>
-    <div class="modes" role="group" aria-label="How much detail" id="modes" hidden>
-      <button type="button" data-mode="discover" title="The essentials: your Sun, Moon and rising sign">Discover</button>
-      <button type="button" data-mode="explore" title="Every planet, the houses, and the lines between them">Explore</button>
-      <button type="button" data-mode="study" title="Degrees and minutes, house cusps, aspect orbs and settings">Study</button>
+    <div class="modes" role="group" aria-label="Three steps, from essentials to full detail" id="modes" hidden>
+      <button type="button" data-mode="discover" title="Step 1: the essentials, your Sun, Moon and rising sign"><span class="num">1</span><span class="ml">Discover</span></button>
+      <svg class="arr" viewBox="0 0 28 10" aria-hidden="true"><path d="M0 5 H26 M21 1 L26 5 L21 9"/></svg>
+      <button type="button" data-mode="explore" title="Step 2: every planet, the houses, and the lines between them"><span class="num">2</span><span class="ml">Explore</span></button>
+      <svg class="arr" viewBox="0 0 28 10" aria-hidden="true"><path d="M0 5 H26 M21 1 L26 5 L21 9"/></svg>
+      <button type="button" data-mode="study" title="Step 3: degrees and minutes, house cusps, aspect orbs and settings"><span class="num">3</span><span class="ml">Study</span></button>
     </div>
     <nav class="actions" aria-label="Chart actions">
       <button type="button" id="a-save" hidden>Save</button>
@@ -246,8 +265,8 @@ ul.saved li small { color: var(--ink-2); display: block; font-size: 14px; }
   <section class="wrap create" id="create" aria-labelledby="create-h">
     <div class="intro">
       <div class="eyebrow red">Your birth chart</div>
-      <h1 id="create-h">The sky at the minute you were born</h1>
-      <p class="lede">Discover your chart. Learn its language. Find out what it might ask you to make.</p>
+      <h1 id="create-h">The sky at your moment of birth</h1>
+      <p class="lede">Discover your chart. Explore its meaning. Study your opportunity.</p>
       <ol class="steps">
         <li><span>I</span><span>See your chart drawn</span></li>
         <li><span>II</span><span>Learn to read it, one layer at a time</span></li>
@@ -325,22 +344,30 @@ ul.saved li small { color: var(--ink-2); display: block; font-size: 14px; }
   <div class="dlg">
     <button type="button" class="close" data-close aria-label="Close">×</button>
     <h2 id="print-h">Print or download</h2>
-    <div class="printgrid">
+    <div class="dview" role="tablist" aria-label="What to download">
+      <button type="button" role="tab" id="v-print" aria-selected="true" data-view="print">Print-ready chart</button>
+      <button type="button" role="tab" id="v-card" aria-selected="false" data-view="card">Introduction card</button>
+    </div>
+    <div class="printgrid" id="view-print">
       <div id="print-opts">
         <fieldset><legend>Paper</legend><div class="opts"><label><input type="radio" name="size" value="A5">A5</label><label><input type="radio" name="size" value="A4" checked>A4</label><label><input type="radio" name="size" value="A3">A3</label></div></fieldset>
         <fieldset><legend>Orientation</legend><div class="opts"><label><input type="radio" name="orientation" value="portrait" checked>Portrait</label><label><input type="radio" name="orientation" value="landscape">Landscape</label></div></fieldset>
-        <fieldset><legend>Ink</legend><div class="opts"><label><input type="radio" name="ink" value="red" checked>Red and black</label><label><input type="radio" name="ink" value="black">Black only</label></div></fieldset>
+        <fieldset><legend>Colour</legend><div class="opts"><label><input type="radio" name="ink" value="red" checked>Colour</label><label><input type="radio" name="ink" value="black">Monotone</label></div></fieldset>
         <fieldset><legend>Content</legend><div class="opts"><label><input type="radio" name="content" value="wheel">Wheel</label><label><input type="radio" name="content" value="positions" checked>Wheel and positions</label></div></fieldset>
         <fieldset><legend>File</legend><div class="opts"><label><input type="radio" name="file" value="pdf" checked>PDF</label><label><input type="radio" name="file" value="png">PNG, 300 dpi</label></div></fieldset>
         <fieldset><legend>Marks</legend><div class="opts"><label><input type="checkbox" id="b-logo" checked>Logotype</label><label><input type="checkbox" id="b-sigil" checked>Sigil</label></div></fieldset>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <button type="button" class="btn primary" id="dl-poster">Download</button>
-          <button type="button" class="btn" id="dl-card">Introduction card (PNG)</button>
-          <span class="status" id="dl-status" role="status"></span>
-        </div>
+        <button type="button" class="btn primary" id="dl-poster" style="width:100%">Download</button>
       </div>
       <div class="preview" id="poster-preview"></div>
     </div>
+    <div class="printgrid" id="view-card" hidden>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:17px">A square card of your chart, sized for an introduction post in the community: 1080 × 1080 pixels.</p>
+        <button type="button" class="btn primary" id="dl-card" style="width:100%">Download card (PNG)</button>
+      </div>
+      <div class="preview" id="card-preview"></div>
+    </div>
+    <span class="status" id="dl-status" role="status"></span>
   </div>
 </dialog>
 
@@ -386,6 +413,8 @@ const SAMPLES = {
   bowie: { name: 'David Bowie', date: '1947-01-08', time: '09:00', notime: false, place: 'Brixton, London', lat: 51.4667, lon: -0.1167, tz: 'Europe/London' },
   mendieta: { name: 'Ana Mendieta', date: '1948-11-18', time: '12:00', notime: true, place: 'Havana, Cuba', lat: 23.132, lon: -82.3642, tz: 'America/Havana' },
 };
+// The guided reading walks the three steps: planets in Discover, then signs, houses and lines in Explore, ending in Study.
+const GUIDE_MODE = ['discover', 'explore', 'explore', 'explore'];
 const GROUNDS = [['shell', 'Shell', '#FAF3EE'], ['blush', 'Blush', '#FCF5F7'], ['rose', 'Rose milk', '#FBF0EF'], ['petal', 'Petal', '#F8EBEE'], ['pinkwhite', 'Pink white', '#FEFAFB']];
 
 let swe = null, cities = null, tzList = null, place = null, assets = null;
@@ -503,12 +532,14 @@ function renderTitle() {
 
 // ---------- rendering ----------
 function render() {
-  document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === S.mode)));
   const name = S.input.name || 'this chart';
-  const wheelMode = S.guide >= 0 ? 'explore' : S.mode;
+  const wheelMode = S.guide >= 0 ? GUIDE_MODE[S.guide] : S.mode;
+  const order = ['discover', 'explore', 'study'], at = order.indexOf(wheelMode);
+  document.querySelectorAll('#modes button').forEach((b, i) => { b.classList.toggle('done', i < at); b.setAttribute('aria-pressed', String(i === at)); if (i === at) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+  document.querySelectorAll('#modes .arr').forEach((a, i) => a.classList.toggle('done', i < at));
   $('wheel').innerHTML = renderWheelV2(S.chart, { mode: wheelMode, sel: S.guide >= 0 ? null : S.sel, title: `Birth chart for ${name}` });
   if (S.guide >= 0) $('wheel').dataset.focus = GUIDE[S.guide].layer; else delete $('wheel').dataset.focus;
-  $('key').hidden = S.mode === 'discover' && S.guide < 0;
+  $('key').hidden = wheelMode === 'discover';
   $('tabs').hidden = S.guide >= 0;
   document.querySelectorAll('#tabs button').forEach(b => { b.setAttribute('aria-selected', String(b.dataset.tab === S.tab)); b.tabIndex = b.dataset.tab === S.tab ? 0 : -1; });
   $('pane').setAttribute('aria-labelledby', S.guide >= 0 ? '' : 'tab-' + S.tab);
@@ -547,8 +578,8 @@ function readingHTML() {
   let out = `<div class="b3" style="grid-template-columns:repeat(${b3.length},minmax(0,1fr))">${b3.map(([k, r, t]) => `<button type="button" data-sel="${k}" aria-pressed="${S.sel === k}"><small>${r}</small><b>${t}</b></button>`).join('')}</div>`;
   if (!S.sel) {
     out += `<div style="display:flex;flex-direction:column;gap:14px"><span class="eyebrow red">Start here</span>
-      <p class="body" style="font-size:21px;line-height:1.45">Your chart is a map of the sky at the minute you were born. ${ch.houses ? 'Three points matter most to begin with: the Sun, the Moon and the rising sign.' : 'Two points matter most to begin with: the Sun and the Moon. Without a birth time, the rising sign can’t be known.'}</p>
-      <p class="muted" style="margin:0;font-size:16px">Choose one above, or any planet on the wheel, to read about it.</p></div>`;
+      <p class="body" style="font-size:21px;line-height:1.45">Your chart is a map of the sky at your moment of birth. ${ch.houses ? 'Three points matter most to begin with: the Sun, the Moon and the rising sign.' : 'Two points matter most to begin with: the Sun and the Moon. Without a birth time, the rising sign can’t be known.'}</p>
+      <p class="muted" style="margin:0;font-size:16px">Choose one above, or any planet on the wheel, to read about it.</p><div style="display:flex;flex-wrap:wrap;gap:10px"><button type="button" class="btn primary" data-go="themes">Next: your creative themes</button><button type="button" class="btn" data-go="chart">All placements</button></div></div>`;
     return out;
   }
   const f = focusData(S.sel), keys = visibleKeys(), i = keys.indexOf(S.sel);
@@ -616,7 +647,7 @@ function guideHTML() {
     <h2>${st.title}</h2><p class="gbody">${st.body}</p>
     <div class="tryit"><span class="lbl">In your chart</span><span>${tries[st.layer]}</span></div>
     <div class="gnav">${S.guide > 0 ? '<button type="button" class="btn" id="g-back">Back</button>' : ''}
-      <button type="button" class="btn primary" id="g-next">${last ? 'See my whole chart' : 'Next: ' + ['signs, the how', 'houses, the where', 'the lines'][S.guide]}</button>
+      <button type="button" class="btn primary" id="g-next">${last ? 'See my whole chart in Study' : 'Next: ' + ['signs, the how', 'houses, the where', 'the lines'][S.guide]}</button>
       <button type="button" class="linkish" id="g-skip">Skip to my chart</button></div></div>`;
 }
 
@@ -630,9 +661,10 @@ $('wheel').addEventListener('click', e => { if (S.guide >= 0) return; const gp =
 $('wheel').addEventListener('keydown', e => { const gp = e.target.closest('.w-planet'); if (gp && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); select(gp.dataset.key); requestAnimationFrame(() => { const n = $('wheel').querySelector(`.w-planet[data-key="${gp.dataset.key}"]`); if (n) n.focus(); }); } });
 $('pane').addEventListener('click', e => {
   const b = e.target.closest('[data-sel]'); if (b) { const k = b.dataset.sel; S.sel = k; S.tab = 'reading'; if (S.mode === 'discover' && !['sun', 'moon', 'asc'].includes(k)) S.mode = 'explore'; render(); return; }
-  if (e.target.id === 'g-next') { if (S.guide === GUIDE.length - 1) { S.guide = -1; S.sel = 'sun'; } else S.guide++; render(); }
+  if (e.target.id === 'g-next') { if (S.guide === GUIDE.length - 1) { S.guide = -1; S.sel = null; S.mode = 'study'; S.tab = 'reading'; } else S.guide++; render(); }
   if (e.target.id === 'g-back') { S.guide--; render(); }
-  if (e.target.id === 'g-skip') { S.guide = -1; render(); }
+  if (e.target.id === 'g-skip') { S.guide = -1; S.sel = null; S.mode = 'explore'; S.tab = 'reading'; render(); }
+  const go = e.target.closest('[data-go]'); if (go) { S.tab = go.dataset.go; render(); }
   if (e.target.id === 'another') { S.invite++; render(); }
   if (e.target.id === 'keep') {
     const list = invitations(S.themes), inv = list[S.invite % list.length], kept = store.get('a4a-v2-kept', []);
@@ -675,7 +707,9 @@ document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click
 // ---------- print and card ----------
 const val = name => document.querySelector(`input[name="${name}"]:checked`).value;
 const printOpts = () => ({ size: val('size'), orientation: val('orientation'), ink: val('ink'), content: val('content'), file: val('file'), logo: $('b-logo').checked, sigil: $('b-sigil').checked });
-function renderPrint() { if (assets) $('poster-preview').innerHTML = posterSVG(S.chart, S.input.name, printOpts(), assets).svg; }
+function renderPrint() { if (!assets) return; $('poster-preview').innerHTML = posterSVG(S.chart, S.input.name, printOpts(), assets).svg; $('card-preview').innerHTML = cardSVG(S.chart, S.input.name, assets); }
+function setView(v) { for (const k of ['print', 'card']) { $('v-' + k).setAttribute('aria-selected', String(k === v)); $('view-' + k).hidden = k !== v; } $('dl-status').textContent = ''; }
+document.querySelector('.dview').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view); });
 $('print-opts').addEventListener('change', renderPrint);
 $('a-print').addEventListener('click', async () => { $('dlg-print').showModal(); if (!assets) { $('poster-preview').innerHTML = '<span class="status">Preparing the preview…</span>'; await loadAssets(); } renderPrint(); });
 async function saveFile(filename, blob) {
@@ -698,9 +732,8 @@ $('dl-poster').addEventListener('click', e => run(e.currentTarget, async () => {
   finally { copy.remove(); }
 }));
 $('dl-card').addEventListener('click', e => run(e.currentTarget, async () => {
-  $('stage').innerHTML = cardSVG(S.chart, S.input.name, assets);
-  const copy = inlineCopy($('stage').querySelector('svg'));
-  try { await saveFile(`${slug(S.input.name)}-introduction-card.png`, await toPNG(copy, 1080, 1080)); } finally { $('stage').innerHTML = ''; }
+  const copy = inlineCopy($('card-preview').querySelector('svg'));
+  await saveFile(`${slug(S.input.name)}-introduction-card.png`, await toPNG(copy, 1080, 1080));
 }));
 async function dataURL(url) { const b = await (await fetch(url)).blob(); return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); }
 async function loadAssets() {

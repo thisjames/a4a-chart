@@ -5,12 +5,11 @@
 // Fills inside the wheel are translucent so the page background shows through.
 import { SIGNS, GLYPHS, norm } from './chart-core.js';
 
-const EL = ['#EBCDC6', '#D5DAC8', '#EEE7D3', '#D8D4E2']; // fire, earth, air, water: a muted data palette, not brand accents
-const INK = '#1D1D1B', INK2 = '#5C4A4D', MUTED = '#9A8A86', RULE = '#D9C4C8', RED = '#C32414', SLATE = '#5E6B78';
+const ELC = ['#EBCDC6', '#D5DAC8', '#EEE7D3', '#D8D4E2']; // fire, earth, air, water: a muted data palette, not brand accents
+const INK = '#1D1D1B', INK2C = '#5C4A4D', MUTED = '#9A8A86', RULE = '#D9C4C8', REDC = '#C32414', SLATEC = '#5E6B78';
 const FONT = "CrimsonPro, 'Crimson Pro', Georgia, serif";
 const C = 450;
 const R = { zOut: 410, zIn: 356, tick: 356, planet: 306, hIn: 150, hOut: 186, asp: 150 };
-const STYLE = { opposition: [RED, ''], square: [RED, ''], trine: [SLATE, '5 4'], sextile: [SLATE, '1.5 4'] };
 const f = n => n.toFixed(1);
 const dm = lon => { const x = norm(lon) % 30; const deg = Math.floor(x); return { deg, min: Math.floor((x - deg) * 60) }; };
 
@@ -37,8 +36,12 @@ function spread(items, gap) {
 }
 
 // mode: 'discover' | 'explore' | 'study' | 'print'. sel: a point key to highlight.
-export function renderWheelV2(chart, { mode = 'explore', sel = null, title = 'Birth chart' } = {}) {
+// mono: a monotone rendering for black-only print — greys for the sign band, black lines.
+export function renderWheelV2(chart, { mode = 'explore', sel = null, title = 'Birth chart', mono = false } = {}) {
   const study = mode === 'study', discover = mode === 'discover', print = mode === 'print';
+  const EL = mono ? ['#E4E4E1', '#EFEFEC', '#E4E4E1', '#EFEFEC'] : ELC;
+  const RED = mono ? INK : REDC, SLATE = mono ? '#55554F' : SLATEC, HOUSEFILL = mono ? '#E4E4E1' : '#F1D5DB', INK2 = mono ? '#3A3A37' : INK2C;
+  const STYLE = { opposition: [RED, ''], square: [RED, ''], trine: [SLATE, '5 4'], sextile: [SLATE, '1.5 4'] };
   const asc = chart.houses ? chart.houses.asc : 0;
   const th = lon => 180 + norm(lon - asc);
   const pt = (r, t) => { const a = t * Math.PI / 180; return [C + r * Math.cos(a), C - r * Math.sin(a)]; };
@@ -77,7 +80,7 @@ export function renderWheelV2(chart, { mode = 'explore', sel = null, title = 'Bi
   if (chart.houses && !discover) {
     const cusps = chart.houses.cusps;
     s.push('<g class="w-layer w-houses">');
-    s.push(`<circle cx="${C}" cy="${C}" r="${R.hOut}" fill="#F1D5DB" fill-opacity="0.35" stroke="${RULE}" stroke-width="0.8"/>`);
+    s.push(`<circle cx="${C}" cy="${C}" r="${R.hOut}" fill="${HOUSEFILL}" fill-opacity="0.35" stroke="${RULE}" stroke-width="0.8"/>`);
     s.push(`<circle cx="${C}" cy="${C}" r="${R.hIn}" fill="#FFFFFF" fill-opacity="0.6" stroke="${RULE}" stroke-width="0.8"/>`);
     cusps.forEach((cu, i) => {
       if (i % 3 !== 0) { const [a, b] = pt(R.hIn, th(cu)), [c, e] = pt(R.zIn, th(cu)); s.push(`<line x1="${f(a)}" y1="${f(b)}" x2="${f(c)}" y2="${f(e)}" stroke="${RULE}" stroke-width="0.8"/>`); }
