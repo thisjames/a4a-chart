@@ -14,6 +14,8 @@ A birth chart generator for Astrology for Artists and Becoming Cosmic. Everythin
 | `lib/` | Swiss Ephemeris compiled to WebAssembly (swisseph-wasm), with the ephemeris data |
 | `test/` | Accuracy and time-zone checks (run with Node 18+) |
 | `squarespace-snippets.html` | Code to paste into Squarespace code blocks |
+| `src/page.src.html`, `src/logotype-paths.json` | The page's editable source, with placeholders for the font, logotype and accuracy table |
+| `tools/build.py` | Builds `index.html` from `src/`: edit the source, then run `python3 tools/build.py` |
 
 ## Page addresses
 
@@ -21,6 +23,12 @@ A birth chart generator for Astrology for Artists and Becoming Cosmic. Everythin
 - `index.html?embed=1` hides the prototype notes, for embedding on the website. Add `&header=0` to hide the header too.
 - `index.html?embed=1&mode=free` fixes the free version.
 - `index.html?embed=1&mode=member` fixes the member version.
+
+## Branches
+
+- `main` is what GitHub Pages serves, so it is the live site on astrologyforartists.com.
+- `v1` holds version 1 exactly as launched for testing (20 Oct 2026).
+- Develop new versions on their own branch (for example `v2`) and merge into `main` only to go live.
 
 ## Running the checks
 
