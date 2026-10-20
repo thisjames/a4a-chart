@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chart Explorer</title>
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+@font-face { font-family: "1790 Royal Printing"; font-weight: 400; font-style: normal; font-display: swap; src: url(../fonts/RoyalPrinting.ttf) format("truetype"); }
+/* Grounds: Shell is the chosen background. The others stay switchable from the internal bar. */
+:root {
+  --page: #FAF3EE; --panel: #FFFBF8; --rule: #E8D8CF;
+  --ink: #1D1D1B; --ink-2: #5C4A4D; --control: #8F7377; --pink: #F1D5DB; --tint: #FAE3E8;
+  --red: #C32414; --red-deep: #8E1A0E; --on-red: #F6F6F6;
+  /* becoming cosmic box: placeholder greens from the design system, to be replaced with the Circle theme's greens */
+  --cosmic-bg: #095C00; --cosmic-hover: #0D7E00; --cosmic-ink: #F6F6F6; --cosmic-soft: #D9EAD3;
+  --display: "1790 Royal Printing", "EB Garamond", "Crimson Pro", Georgia, serif;
+  --text: "Crimson Pro", Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+:root[data-ground="blush"] { --page: #FCF5F7; --panel: #FFFFFF; --rule: #EBD9DD; }
+:root[data-ground="rose"] { --page: #FBF0EF; --panel: #FFFAF9; --rule: #E9D3D1; }
+:root[data-ground="petal"] { --page: #F8EBEE; --panel: #FDF6F7; --rule: #E6CDD3; }
+:root[data-ground="pinkwhite"] { --page: #FEFAFB; --panel: #FAEEF1; --rule: #EED9DE; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--ink); font-family: var(--text); font-size: 17px; line-height: 1.55; font-variant-numeric: lining-nums; }
+a { color: var(--red); text-underline-offset: 3px; }
+a:hover { color: var(--red-deep); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+.eyebrow { font-family: var(--display); font-weight: 400; font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; }
+.red { color: var(--red); }
+.muted { color: var(--ink-2); }
+.wrap { max-width: 1440px; margin: 0 auto; padding-inline: 40px; }
+@media (max-width: 700px) { .wrap { padding-inline: 16px; } }
+.draft { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); border: 1px dashed var(--control); padding: 0 6px; border-radius: 2px; white-space: nowrap; }
+:root.no-draft .draft { display: none; }
+[hidden] { display: none !important; }
+
+/* buttons */
+.btn { min-height: 44px; padding: 0 20px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 0; cursor: pointer; text-decoration: none;
+  font-family: var(--display); font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; border: 1px solid var(--control); background: transparent; color: var(--ink); }
+.btn:hover { background: var(--tint); color: var(--ink); }
+.btn.primary { background: var(--red); border-color: var(--red); color: var(--on-red); }
+.btn.primary:hover { background: var(--red-deep); border-color: var(--red-deep); color: var(--on-red); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.linkish { background: none; border: 0; padding: 0; color: var(--red); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: inherit; }
+
+/* header */
+header.top { border-bottom: 1px solid var(--rule); }
+header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 28px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--ink); }
+.brand img { height: 44px; width: auto; display: block; }
+/* Discover → Explore → Study: a three-step progression. Done steps fill in ink, the current step in red. */
+.modes { display: flex; align-items: center; gap: 4px; }
+.modes button { min-height: 44px; padding: 0 8px; display: inline-flex; align-items: center; gap: 10px; border: 0; background: transparent; cursor: pointer; font-family: var(--display); font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-2); }
+.modes .num { width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--control); font: 14px/1 var(--text); letter-spacing: 0; color: var(--ink); flex: none; }
+.modes .ml { padding: 4px 0; border-bottom: 2px solid transparent; }
+.modes button.done .num { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+.modes button.done { color: var(--ink); }
+.modes button[aria-current="step"] { color: var(--ink); }
+.modes button[aria-current="step"] .num { background: var(--red); border-color: var(--red); color: var(--on-red); }
+.modes button[aria-current="step"] .ml { border-bottom-color: var(--red); }
+.modes button:hover .ml { border-bottom-color: var(--control); }
+.modes .arr { width: 28px; height: 10px; fill: none; stroke: var(--control); stroke-width: 1.2; flex: none; }
+.modes .arr.done { stroke: var(--ink); }
+nav.actions { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+nav.actions button { background: none; border: 0; padding: 10px 0; cursor: pointer; font-family: var(--display); font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-2); }
+nav.actions button:hover { color: var(--red); }
+@media (max-width: 700px) { .modes { order: 3; width: 100%; justify-content: space-between; gap: 0; } .modes button { padding: 0 2px; gap: 6px; font-size: 10px; letter-spacing: 0.16em; } .modes .arr { width: 18px; } }
+
+/* create screen */
+.create { display: flex; flex-wrap: wrap; gap: 48px 112px; align-items: flex-start; padding-block: 72px 64px; }
+.create .intro { flex: 1 1 380px; max-width: 540px; display: flex; flex-direction: column; gap: 20px; }
+.create h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(40px, 6vw, 64px); line-height: 1; letter-spacing: -0.01em; }
+.create .lede { margin: 0; font-size: 22px; line-height: 1.5; color: var(--ink-2); }
+.steps { margin: 12px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--rule); }
+.steps li { display: grid; grid-template-columns: 40px 1fr; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.steps li span:first-child { font-family: var(--display); color: var(--red); }
+form.birth { flex: 1 1 380px; max-width: 560px; background: var(--panel); padding: 40px; display: flex; flex-direction: column; gap: 24px; }
+@media (max-width: 700px) { .create { padding-block: 32px; gap: 32px; } form.birth { padding: 24px 20px; } }
+.field { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.field > label:not(.check) { font-family: var(--display); font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; }
+.field input[type=text], .field input[type=date], .field input[type=time] { height: 48px; padding: 0 14px; border: 1px solid var(--control); border-radius: 0; background: #FFFFFF; font: 18px var(--text); color: var(--ink); width: 100%; }
+.field input:disabled { opacity: 0.45; }
+.help { font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 16px; min-height: 44px; cursor: pointer; margin-top: 4px; }
+.check input { width: 20px; height: 20px; margin: 3px 0 0; accent-color: var(--red); flex: none; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+ul.sug { position: absolute; top: 76px; left: 0; right: 0; z-index: 5; margin: 0; padding: 0; list-style: none; background: #FFFFFF; border: 1px solid var(--control); border-top: 0; max-height: 300px; overflow-y: auto; }
+ul.sug li { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; }
+ul.sug li small { color: var(--ink-2); font-size: 14px; }
+ul.sug li[aria-selected="true"], ul.sug li:hover { background: var(--tint); }
+.samples { font-size: 15px; color: var(--ink-2); }
+.samples button { margin-right: 10px; }
+.formerr { color: var(--red-deep); font-size: 15px; }
+
+/* explorer */
+.titlebar { display: flex; flex-wrap: wrap; gap: 6px 24px; align-items: baseline; justify-content: space-between; padding-top: 18px; }
+.titlebar h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(32px, 4vw, 44px); line-height: 1.05; letter-spacing: -0.01em; }
+.titlebar .meta { margin: 0; font-size: 16px; color: var(--ink-2); }
+.titlebar .left { display: flex; flex-wrap: wrap; gap: 4px 24px; align-items: baseline; }
+.warn { margin: 8px 0 0; font-size: 15px; color: var(--red-deep); }
+.stage { display: flex; flex-wrap: wrap; gap: 24px 40px; align-items: flex-start; padding-top: 10px; }
+.wheelcol { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+#wheel { width: 100%; max-width: 740px; }
+#wheel svg { width: 100%; height: auto; display: block; }
+.w-planet { cursor: pointer; outline: none; }
+.w-planet:hover .w-hit, .w-planet:focus-visible .w-hit { fill-opacity: 1; stroke: var(--red); stroke-width: 1.4; }
+.key { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 22px; font-size: 14px; color: var(--ink-2); }
+.key span { display: inline-flex; align-items: center; gap: 8px; }
+.panel { flex: 1 1 400px; max-width: 500px; min-width: 0; background: var(--panel); display: flex; flex-direction: column; }
+.tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--rule); }
+.tabs button { min-height: 52px; border: 0; background: transparent; cursor: pointer; font-family: var(--display); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-2); }
+.tabs button[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--red); }
+.pane { height: 690px; overflow-y: auto; padding: 26px 30px; display: flex; flex-direction: column; gap: 20px; }
+@media (max-width: 960px) { .panel { max-width: none; flex-basis: 100%; } .pane { height: auto; overflow: visible; } }
+@media (max-width: 700px) { .pane { padding: 22px 18px; } }
+.b3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.b3 button { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 10px 12px; cursor: pointer; border: 1px solid var(--rule); background: transparent; min-height: 64px; }
+.b3 button[aria-pressed="true"] { background: var(--tint); border-color: var(--red); }
+.b3 small { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.b3 b { font-family: var(--display); font-weight: 400; font-size: 18px; line-height: 1.2; }
+.focus h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1.08; }
+.focus .pos { margin: 2px 0 0; font-size: 15px; color: var(--ink-2); }
+.headrow { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+dl.www { margin: 0; display: grid; grid-template-columns: 58px 1fr; gap: 6px 12px; font-size: 16px; line-height: 1.45; }
+dl.www dt { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); padding-top: 3px; }
+dl.www dd { margin: 0; }
+.body { margin: 0; font-size: 18px; line-height: 1.55; }
+.convos { border-top: 1px solid var(--rule); padding-top: 14px; display: flex; flex-direction: column; gap: 2px; }
+.convos .lbl, .lbl { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-2); }
+.convos button { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; text-align: left; background: none; border: 0; padding: 6px 0; cursor: pointer; font-size: 16px; }
+.convos button:hover span:nth-child(2) { color: var(--red); }
+.convos .orb { font-size: 14px; color: var(--ink-2); }
+.convos .aspmeaning { font-size: 14px; color: var(--ink-2); grid-column: 2 / 4; margin-top: -4px; }
+svg.g { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.stepper { display: flex; justify-content: space-between; gap: 8px; border-top: 1px solid var(--rule); padding-top: 14px; }
+.tblhead { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 6px; border-bottom: 2px solid var(--ink); }
+.tblhead h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; }
+.tblhead span { font-size: 13px; color: var(--ink-2); }
+.prow { display: grid; grid-template-columns: 22px 96px 1fr 30px; gap: 10px; align-items: center; width: 100%; text-align: left; border: 0; border-bottom: 1px solid var(--rule); background: transparent; padding: 7px 6px; font-size: 16px; cursor: pointer; }
+.prow[aria-pressed="true"] { background: var(--tint); box-shadow: inset 2px 0 0 var(--red); }
+.prow:hover { background: var(--tint); }
+.prow span:nth-child(3), .prow span:nth-child(4) { color: var(--ink-2); }
+.prow span:nth-child(4) { text-align: right; }
+.hgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 20px; }
+.hgrid div { display: grid; grid-template-columns: 24px 1fr; gap: 6px; font-size: 15px; line-height: 1.35; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+.hgrid div span:first-child { color: var(--ink-2); }
+.alist div { display: grid; grid-template-columns: 1fr auto; gap: 8px; font-size: 15px; padding: 4px 0; border-bottom: 1px solid var(--rule); }
+.settings { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.settings label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-2); }
+.settings select { height: 40px; border: 1px solid var(--control); border-radius: 0; background: #FFFFFF; font: 16px var(--text); padding: 0 8px; color: var(--ink); }
+.theme { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--rule); padding-top: 16px; }
+.theme .t { display: flex; gap: 14px; align-items: baseline; }
+.theme .n { font-family: var(--display); font-size: 26px; line-height: 1; color: var(--red); }
+.theme h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1.2; }
+.theme .glyphs { display: flex; gap: 8px; margin-left: auto; }
+.theme p { margin: 0; font-size: 16px; line-height: 1.5; }
+.theme .from { font-size: 13px; color: var(--ink-2); }
+.theme .prompt { font-style: italic; }
+details.method { font-size: 15px; color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: 12px; }
+details.method summary { cursor: pointer; color: var(--red); }
+.invite { background: var(--pink); padding: 26px; display: flex; flex-direction: column; gap: 12px; }
+.invite .eyebrow { color: var(--red-deep); }
+.invite h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; line-height: 1.15; }
+.invite p { margin: 0; font-size: 16px; color: #5C4A4D; }
+.invite .btn { border-color: #8F7377; }
+.cosmic { background: var(--cosmic-bg); color: var(--cosmic-ink); padding: 26px; display: flex; flex-direction: column; gap: 14px; }
+.cosmic img { width: 170px; height: auto; display: block; }
+.cosmic p { margin: 0; font-size: 18px; line-height: 1.5; color: var(--cosmic-soft); }
+.cosmic a { color: var(--cosmic-ink); border-color: var(--cosmic-ink); width: fit-content; }
+.cosmic a:hover { background: var(--cosmic-hover); color: var(--cosmic-ink); }
+.kept { font-size: 15px; color: var(--ink-2); }
+.kept ul { margin: 6px 0 0; padding-left: 18px; }
+
+/* guided reading */
+.guide { display: flex; flex-direction: column; gap: 18px; }
+.guide ol.gsteps { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.guide ol.gsteps li { border-top: 2px solid var(--rule); padding-top: 8px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.guide ol.gsteps li[aria-current="step"] { border-color: var(--red); color: var(--ink); }
+.guide ol.gsteps li.done { border-color: var(--ink); }
+.guide h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.04; }
+.guide .gbody { margin: 0; font-size: 20px; line-height: 1.5; }
+.tryit { background: var(--page); padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; font-size: 17px; }
+.tryit .grow { display: flex; gap: 12px; align-items: flex-start; padding: 6px 0; border-top: 1px solid var(--rule); }
+.tryit .grow:first-of-type { border-top: 0; }
+.tryit .grow > div { display: flex; flex-direction: column; }
+.tryit .grow b { font-weight: 400; font-family: var(--display); font-size: 17px; line-height: 1.3; }
+.tryit .grow span { font-size: 15px; color: var(--ink-2); line-height: 1.4; }
+.tryit .sw { width: 18px; height: 18px; display: block; flex: none; margin-top: 3px; }
+.tryit .hn { width: 18px; flex: none; font-family: var(--display); color: var(--red); text-align: center; }
+.tryit svg.g { margin-top: 3px; flex: none; }
+.gnav { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+footer.foot .wrap { display: flex; flex-wrap: wrap; gap: 4px 32px; justify-content: space-between; font-size: 13px; color: var(--ink-2); padding-block: 16px 72px; }
+footer.foot a { color: var(--ink-2); }
+
+/* dialogs */
+dialog { border: 0; padding: 0; max-width: min(920px, calc(100vw - 32px)); width: 100%; background: var(--panel); color: var(--ink); }
+dialog::backdrop { background: rgba(29, 29, 27, 0.4); }
+.dlg { padding: 28px; display: flex; flex-direction: column; gap: 18px; max-height: calc(100vh - 64px); overflow-y: auto; }
+.dlg h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; }
+.dlg .close { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border: 0; background: transparent; cursor: pointer; font-size: 22px; }
+.printgrid { display: grid; grid-template-columns: 260px 1fr; gap: 24px; }
+@media (max-width: 760px) { .printgrid { grid-template-columns: 1fr; } }
+fieldset { border: 0; margin: 0 0 14px; padding: 0; }
+legend { font-family: var(--display); font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; margin-bottom: 6px; padding: 0; }
+.opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.opts label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--rule); padding: 6px 10px; cursor: pointer; font-size: 15px; min-height: 40px; }
+.opts input { accent-color: var(--red); margin: 0; }
+.dview { display: flex; border-bottom: 1px solid var(--rule); gap: 24px; }
+.dview button { min-height: 44px; border: 0; background: transparent; cursor: pointer; padding: 0; font-family: var(--display); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-2); }
+.dview button[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--red); }
+#card-preview svg { width: min(100%, 460px); height: auto; max-height: none; aspect-ratio: 1; }
+.preview { background: var(--page); display: flex; align-items: center; justify-content: center; padding: 16px; min-height: 360px; }
+.preview svg { max-width: 100%; max-height: 520px; width: auto; height: auto; box-shadow: 0 1px 0 var(--rule); background: #FFFFFF; }
+.status { font-size: 15px; color: var(--ink-2); }
+ul.saved { margin: 0; padding: 0; list-style: none; }
+ul.saved li { display: flex; justify-content: space-between; gap: 12px; align-items: center; border-bottom: 1px solid var(--rule); padding: 8px 0; }
+ul.saved li button.open { background: none; border: 0; padding: 6px 0; cursor: pointer; font-size: 18px; text-align: left; }
+ul.saved li small { color: var(--ink-2); display: block; font-size: 14px; }
+.stage-off { position: absolute; left: -10000px; top: 0; width: 2000px; }
+
+/* internal bar: temporary, for testing only */
+.internal { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: #1D1D1B; color: #F1F1EC; font: 13px/1.3 system-ui, sans-serif; }
+.internal .in { max-width: 1440px; margin: 0 auto; padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+#grounds { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.internal b { font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; color: #C9C9C2; }
+.internal .sw { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px solid #55554F; color: #F1F1EC; padding: 4px 10px 4px 4px; cursor: pointer; min-height: 32px; }
+.internal .sw i { width: 22px; height: 22px; display: block; border: 1px solid #55554F; }
+.internal .sw[aria-pressed="true"] { border-color: #F1F1EC; background: #33332F; }
+.internal label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.internal .hide { margin-left: auto; background: transparent; border: 0; color: #C9C9C2; cursor: pointer; text-decoration: underline; }
+:root.no-internal .internal { display: none; }
+@media (max-width: 700px) { #grounds { flex-wrap: nowrap; } .internal .in { flex-wrap: nowrap; overflow-x: auto; padding: 6px 10px; gap: 8px; } .internal .sw { white-space: nowrap; min-height: 30px; } .internal b { white-space: nowrap; } .internal label { white-space: nowrap; } nav.actions { gap: 0 16px; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="https://www.astrologyforartists.com" target="_top">
+      <img src="../sigil.png" alt="Astrology for Artists">
+      <span class="eyebrow">Chart Explorer</span>
+    </a>
+    <div class="modes" role="group" aria-label="Three steps, from essentials to full detail" id="modes" hidden>
+      <button type="button" data-mode="discover" title="Step 1: the essentials, your Sun, Moon and rising sign"><span class="num">1</span><span class="ml">Discover</span></button>
+      <svg class="arr" viewBox="0 0 28 10" aria-hidden="true"><path d="M0 5 H26 M21 1 L26 5 L21 9"/></svg>
+      <button type="button" data-mode="explore" title="Step 2: every planet, the houses, and the lines between them"><span class="num">2</span><span class="ml">Explore</span></button>
+      <svg class="arr" viewBox="0 0 28 10" aria-hidden="true"><path d="M0 5 H26 M21 1 L26 5 L21 9"/></svg>
+      <button type="button" data-mode="study" title="Step 3: degrees and minutes, house cusps, aspect orbs and settings"><span class="num">3</span><span class="ml">Study</span></button>
+    </div>
+    <nav class="actions" aria-label="Chart actions">
+      <button type="button" id="a-save" hidden>Save</button>
+      <button type="button" id="a-saved">Saved charts</button>
+      <button type="button" id="a-print" hidden>Print or download</button>
+      <button type="button" id="a-new" hidden>New chart</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- 1. Create -->
+  <section class="wrap create" id="create" aria-labelledby="create-h">
+    <div class="intro">
+      <div class="eyebrow red">Your birth chart</div>
+      <h1 id="create-h">The sky at your moment of birth</h1>
+      <p class="lede">Discover your chart. Explore its meaning. Study your opportunity.</p>
+      <ol class="steps">
+        <li><span>I</span><span>See your chart drawn</span></li>
+        <li><span>II</span><span>Learn to read it, one layer at a time</span></li>
+        <li><span>III</span><span>Discover three creative themes</span></li>
+        <li><span>IV</span><span>Begin with an invitation to make something</span></li>
+      </ol>
+    </div>
+    <form class="birth" id="f" novalidate aria-labelledby="form-h">
+      <h2 id="form-h" style="margin:0;font-family:var(--display);font-weight:400;font-size:26px;line-height:1.2">Your birth details</h2>
+      <div class="field">
+        <label for="name">Name on the chart</label>
+        <input id="name" type="text" autocomplete="off" placeholder="Optional">
+        <span class="help">It only appears on your chart and your downloads.</span>
+      </div>
+      <div class="field">
+        <label for="date">Date of birth</label>
+        <input id="date" type="date" required min="1800-01-01" max="2100-12-31">
+        <span class="help">Places the planets in their signs.</span>
+      </div>
+      <div class="field">
+        <label for="time">Time of birth</label>
+        <input id="time" type="time">
+        <span class="help">Sets your rising sign and houses, which turn through the day. A birth certificate or hospital record is the best source.</span>
+        <label class="check"><input type="checkbox" id="notime"><span>I don’t know my birth time. <span class="muted">You’ll still see your planets and how they relate. The rising sign and houses are left out, and the Moon may sit a sign either side.</span></span></label>
+      </div>
+      <div class="field">
+        <label for="place">Place of birth</label>
+        <input id="place" type="text" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sug" placeholder="Start typing a town or city">
+        <ul class="sug" id="sug" role="listbox" aria-label="Matching places" hidden></ul>
+        <span class="help" id="coords">Gives the latitude, longitude and the clock time in use at the time, including summer time and older local times.</span>
+      </div>
+      <p class="formerr" id="formerr" role="alert" hidden></p>
+      <button type="submit" class="btn primary" style="min-height:52px;font-size:12px">Reveal my chart</button>
+      <p class="samples">Or try a sample: <button type="button" class="linkish" data-sample="kahlo">Frida Kahlo</button> <button type="button" class="linkish" data-sample="bowie">David Bowie</button> <button type="button" class="linkish" data-sample="mendieta">Ana Mendieta, time unknown</button></p>
+      <p class="help" style="margin:0">Your chart is calculated in your browser. Nothing you enter is sent anywhere, and it is only kept if you save it.</p>
+    </form>
+  </section>
+
+  <!-- 2 and 3. Guided reading and explorer -->
+  <section class="wrap" id="explorer" hidden aria-labelledby="chart-name">
+    <div class="titlebar">
+      <div class="left"><h1 id="chart-name"></h1><p class="meta" id="chart-meta"></p></div>
+      <button type="button" class="linkish" id="open-guide">Take the guided reading</button>
+    </div>
+    <p class="warn" id="warn" hidden></p>
+    <div class="stage">
+      <div class="wheelcol">
+        <div id="wheel" aria-label="Chart wheel. Choose a planet to read about it."></div>
+        <div class="key" id="key" aria-label="Key to the lines">
+          <span><svg width="30" height="6" aria-hidden="true"><line x1="0" y1="3" x2="30" y2="3" stroke="#C32414" stroke-width="1.6"/></svg>Tension</span>
+          <span><svg width="30" height="6" aria-hidden="true"><line x1="0" y1="3" x2="30" y2="3" stroke="#5E6B78" stroke-width="1.6" stroke-dasharray="5 4"/></svg>Flow</span>
+          <span><svg width="30" height="6" aria-hidden="true"><line x1="0" y1="3" x2="30" y2="3" stroke="#5E6B78" stroke-width="1.6" stroke-dasharray="1.5 4" stroke-linecap="round"/></svg>Opening</span>
+          <span>Side by side: blending</span>
+        </div>
+      </div>
+      <section class="panel" aria-label="Reading panel">
+        <div class="tabs" role="tablist" aria-label="Panel" id="tabs">
+          <button type="button" role="tab" id="tab-reading" aria-controls="pane" data-tab="reading">Reading</button>
+          <button type="button" role="tab" id="tab-chart" aria-controls="pane" data-tab="chart">Chart</button>
+          <button type="button" role="tab" id="tab-themes" aria-controls="pane" data-tab="themes">Themes</button>
+          <button type="button" role="tab" id="tab-begin" aria-controls="pane" data-tab="begin">Begin</button>
+        </div>
+        <div class="pane" id="pane" role="tabpanel" tabindex="0"></div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <span>Calculated in your browser with the Swiss Ephemeris. Nothing you enter leaves this page.</span>
+  <span>Readings and themes are drafts for testing. <a href="https://www.astrologyforartists.com" target="_top">Back to Astrology for Artists</a></span>
+</div></footer>
+
+<dialog id="dlg-print" aria-labelledby="print-h">
+  <div class="dlg">
+    <button type="button" class="close" data-close aria-label="Close">×</button>
+    <h2 id="print-h">Print or download</h2>
+    <div class="dview" role="tablist" aria-label="What to download">
+      <button type="button" role="tab" id="v-print" aria-selected="true" data-view="print">Print-ready chart</button>
+      <button type="button" role="tab" id="v-card" aria-selected="false" data-view="card">Introduction card</button>
+    </div>
+    <div class="printgrid" id="view-print">
+      <div id="print-opts">
+        <fieldset><legend>Paper</legend><div class="opts"><label><input type="radio" name="size" value="A5">A5</label><label><input type="radio" name="size" value="A4" checked>A4</label><label><input type="radio" name="size" value="A3">A3</label></div></fieldset>
+        <fieldset><legend>Orientation</legend><div class="opts"><label><input type="radio" name="orientation" value="portrait" checked>Portrait</label><label><input type="radio" name="orientation" value="landscape">Landscape</label></div></fieldset>
+        <fieldset><legend>Colour</legend><div class="opts"><label><input type="radio" name="ink" value="red" checked>Colour</label><label><input type="radio" name="ink" value="black">Monotone</label></div></fieldset>
+        <fieldset><legend>Content</legend><div class="opts"><label><input type="radio" name="content" value="wheel">Wheel</label><label><input type="radio" name="content" value="positions" checked>Wheel and positions</label></div></fieldset>
+        <fieldset><legend>File</legend><div class="opts"><label><input type="radio" name="file" value="pdf" checked>PDF</label><label><input type="radio" name="file" value="png">PNG, 300 dpi</label></div></fieldset>
+        <fieldset><legend>Marks</legend><div class="opts"><label><input type="checkbox" id="b-logo" checked>Logotype</label><label><input type="checkbox" id="b-sigil" checked>Sigil</label></div></fieldset>
+        <button type="button" class="btn primary" id="dl-poster" style="width:100%">Download</button>
+      </div>
+      <div class="preview" id="poster-preview"></div>
+    </div>
+    <div class="printgrid" id="view-card" hidden>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <p style="margin:0;font-size:17px">A square card of your chart, sized for an introduction post in the community: 1080 × 1080 pixels.</p>
+        <button type="button" class="btn primary" id="dl-card" style="width:100%">Download card (PNG)</button>
+      </div>
+      <div class="preview" id="card-preview"></div>
+    </div>
+    <span class="status" id="dl-status" role="status"></span>
+  </div>
+</dialog>
+
+<dialog id="dlg-saved" aria-labelledby="saved-h">
+  <div class="dlg" style="max-width:560px">
+    <button type="button" class="close" data-close aria-label="Close">×</button>
+    <h2 id="saved-h">Saved charts</h2>
+    <p class="help" style="margin:0">Kept in this browser only.</p>
+    <ul class="saved" id="saved-list"></ul>
+  </div>
+</dialog>
+
+<div class="stage-off" id="stage" aria-hidden="true"></div>
+
+<div class="internal" role="region" aria-label="Internal test controls">
+  <div class="in">
+    <b>Internal · background</b>
+    <span id="grounds"></span>
+    <label><input type="checkbox" id="t-draft" checked> Draft tags</label>
+    <button type="button" class="hide" id="t-hide">Hide this bar</button>
+  </div>
+</div>
+
+<script type="module">
+import SwissEph from '../lib/src/swisseph.js';
+import { computeChart, fmtPos, formatOffset, GLYPHS, SIGNS, HOUSE_SYSTEMS, norm, degInSign } from '../chart-core.js';
+import { renderWheelV2 } from './wheel-v2.js';
+import { PLANET_INFO, SIGN_INFO, HOUSE_INFO, IN_SIGN, IN_HOUSE, RISING, ASPECT_INFO, GUIDE, ORD } from './readings.js';
+import { creativeThemes, invitations, weekIndex } from './themes.js';
+import { posterSVG, cardSVG, inlineCopy, toPDF, toPNG, slug, PAPER, loadFonts } from './studio-export.js';
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } } };
+const g = k => `<svg class="g" viewBox="-11 -11 22 22" aria-hidden="true"><path d="${GLYPHS[k]}"/></svg>`;
+const signIdx = lon => Math.floor(norm(lon) / 30);
+const fmtOrb = o => `${Math.floor(o)}°${String(Math.round((o % 1) * 60)).padStart(2, '0')}′`;
+const VERB = { conjunction: 'Beside', opposition: 'Opposite', square: 'Square', trine: 'Trine', sextile: 'Sextile' };
+const JOIN_URL = 'https://www.astrologyforartists.com/becoming-cosmic';
+const SAMPLES = {
+  kahlo: { name: 'Frida Kahlo', date: '1907-07-06', time: '08:30', notime: false, place: 'Coyoacán, Mexico', lat: 19.35, lon: -99.1667, tz: 'America/Mexico_City' },
+  bowie: { name: 'David Bowie', date: '1947-01-08', time: '09:00', notime: false, place: 'Brixton, London', lat: 51.4667, lon: -0.1167, tz: 'Europe/London' },
+  mendieta: { name: 'Ana Mendieta', date: '1948-11-18', time: '12:00', notime: true, place: 'Havana, Cuba', lat: 23.132, lon: -82.3642, tz: 'America/Havana' },
+};
+// The guided reading walks the three steps: planets in Discover, then signs, houses and lines in Explore, ending in Study.
+const GUIDE_MODE = ['discover', 'explore', 'explore', 'explore'];
+const GROUNDS = [['shell', 'Shell', '#FAF3EE'], ['blush', 'Blush', '#FCF5F7'], ['rose', 'Rose milk', '#FBF0EF'], ['petal', 'Petal', '#F8EBEE'], ['pinkwhite', 'Pink white', '#FEFAFB']];
+
+let swe = null, cities = null, tzList = null, place = null, assets = null;
+const S = { input: null, chart: null, themes: [], mode: 'explore', sel: null, tab: 'reading', guide: -1, invite: 0, houseSystem: 'P', nodeType: 'true' };
+
+// ---------- internal bar ----------
+function setGround(id) {
+  if (id === 'shell') delete document.documentElement.dataset.ground; else document.documentElement.dataset.ground = id;
+  store.set('a4a-v2-ground', id);
+  $('grounds').innerHTML = GROUNDS.map(([k, n, c]) => `<button type="button" class="sw" data-g="${k}" aria-pressed="${k === id}"><i style="background:${c}"></i>${n}</button>`).join(' ');
+}
+$('grounds').addEventListener('click', e => { const b = e.target.closest('[data-g]'); if (b) setGround(b.dataset.g); });
+setGround(store.get('a4a-v2-ground', 'shell'));
+$('t-draft').checked = store.get('a4a-v2-draft', true);
+document.documentElement.classList.toggle('no-draft', !$('t-draft').checked);
+$('t-draft').addEventListener('change', e => { store.set('a4a-v2-draft', e.target.checked); document.documentElement.classList.toggle('no-draft', !e.target.checked); });
+$('t-hide').addEventListener('click', () => document.documentElement.classList.add('no-internal'));
+if (new URLSearchParams(location.search).get('internal') === '0') document.documentElement.classList.add('no-internal');
+
+// ---------- places ----------
+const fold = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+fetch('../cities.json').then(r => r.json()).then(d => { tzList = d.tz; cities = d.cities.map(c => ({ c, k: fold(c[0]) })); }).catch(() => {});
+let sugItems = [], sugIdx = -1;
+function showSug(q) {
+  const ul = $('sug');
+  if (!cities || q.trim().length < 2) { ul.hidden = true; $('place').setAttribute('aria-expanded', 'false'); return; }
+  const k = fold(q.split(',')[0].trim());
+  sugItems = cities.filter(x => x.k.startsWith(k)).slice(0, 8).map(x => x.c);
+  sugIdx = -1;
+  ul.innerHTML = sugItems.map((c, i) => `<li role="option" id="sug-${i}" data-i="${i}" aria-selected="false"><span>${esc(c[0])}, ${esc([c[1], c[2]].filter(Boolean).join(', '))}</span><small>${Math.abs(c[3]).toFixed(2)}°${c[3] >= 0 ? 'N' : 'S'} ${Math.abs(c[4]).toFixed(2)}°${c[4] >= 0 ? 'E' : 'W'}</small></li>`).join('')
+    || '<li aria-disabled="true"><small>No match in the test list of 7,300 places. Try the nearest large town.</small></li>';
+  ul.hidden = false; $('place').setAttribute('aria-expanded', 'true');
+}
+function pickPlace(c) {
+  place = { place: `${c[0]}, ${c[2]}`, lat: c[3], lon: c[4], tz: tzList[c[5]] };
+  $('place').value = place.place; $('sug').hidden = true; $('place').setAttribute('aria-expanded', 'false');
+  $('coords').textContent = `${Math.abs(c[3]).toFixed(2)}° ${c[3] >= 0 ? 'N' : 'S'}, ${Math.abs(c[4]).toFixed(2)}° ${c[4] >= 0 ? 'E' : 'W'} · ${place.tz.replace(/_/g, ' ')}`;
+}
+$('place').addEventListener('input', e => { place = null; showSug(e.target.value); });
+$('place').addEventListener('keydown', e => {
+  if ($('sug').hidden) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault(); sugIdx = Math.max(0, Math.min(sugItems.length - 1, sugIdx + (e.key === 'ArrowDown' ? 1 : -1)));
+    [...$('sug').children].forEach((li, i) => li.setAttribute('aria-selected', String(i === sugIdx)));
+    $('place').setAttribute('aria-activedescendant', `sug-${sugIdx}`);
+  } else if (e.key === 'Enter' && sugIdx >= 0) { e.preventDefault(); pickPlace(sugItems[sugIdx]); }
+  else if (e.key === 'Escape') $('sug').hidden = true;
+});
+$('sug').addEventListener('mousedown', e => { const li = e.target.closest('li[data-i]'); if (li) { e.preventDefault(); pickPlace(sugItems[+li.dataset.i]); } });
+$('place').addEventListener('blur', () => setTimeout(() => { $('sug').hidden = true; }, 150));
+$('notime').addEventListener('change', () => { $('time').disabled = $('notime').checked; });
+
+function fillForm(s) {
+  $('name').value = s.name || ''; $('date').value = s.date; $('time').value = s.time || ''; $('notime').checked = !!s.notime; $('time').disabled = !!s.notime;
+  $('place').value = s.place; place = { place: s.place, lat: s.lat, lon: s.lon, tz: s.tz };
+  $('coords').textContent = `${Math.abs(s.lat).toFixed(2)}° ${s.lat >= 0 ? 'N' : 'S'}, ${Math.abs(s.lon).toFixed(2)}° ${s.lon >= 0 ? 'E' : 'W'} · ${s.tz.replace(/_/g, ' ')}`;
+}
+document.querySelectorAll('[data-sample]').forEach(b => b.addEventListener('click', () => { fillForm(SAMPLES[b.dataset.sample]); open(currentInput(), { guide: false }); }));
+
+function currentInput() {
+  return { name: $('name').value.trim(), date: $('date').value, time: $('time').value, notime: $('notime').checked, place: place ? place.place : $('place').value, lat: place && place.lat, lon: place && place.lon, tz: place && place.tz };
+}
+$('f').addEventListener('submit', e => {
+  e.preventDefault();
+  const i = currentInput(), err = [];
+  if (!i.date) err.push('Add your date of birth.');
+  if (!i.notime && !i.time) err.push('Add your birth time, or tick “I don’t know my birth time”.');
+  if (!place) err.push('Choose your birthplace from the list.');
+  $('formerr').hidden = !err.length; $('formerr').textContent = err.join(' ');
+  if (!err.length) open(i, { guide: true });
+});
+
+// ---------- opening a chart ----------
+function calc() {
+  const i = S.input;
+  const [y, mo, d] = i.date.split('-').map(Number);
+  const [h, mi] = (i.time || '12:00').split(':').map(Number);
+  S.chart = computeChart(swe, { year: y, month: mo, day: d, hour: h, minute: mi, lat: i.lat, lon: i.lon, tz: i.tz, placeName: i.place },
+    { houseSystem: S.houseSystem, nodeType: S.nodeType, timeKnown: !i.notime });
+  S.themes = creativeThemes(S.chart);
+}
+function open(input, { guide }) {
+  if (!swe) return;
+  S.input = input; S.sel = null; S.tab = 'reading'; S.mode = 'explore';
+  try { calc(); } catch (err) { $('formerr').hidden = false; $('formerr').textContent = 'That date could not be calculated. Check it and try again.'; console.error(err); return; }
+  S.invite = Math.max(0, weekIndex()) % invitations(S.themes).length;
+  S.guide = guide ? 0 : -1;
+  $('create').hidden = true; $('explorer').hidden = false;
+  for (const id of ['modes', 'a-save', 'a-print', 'a-new']) $(id).hidden = false;
+  try { history.replaceState(null, '', '#' + encodeURIComponent(JSON.stringify(input))); } catch {}
+  renderTitle(); render();
+  window.scrollTo(0, 0);
+}
+$('a-new').addEventListener('click', () => {
+  $('explorer').hidden = true; $('create').hidden = false;
+  for (const id of ['modes', 'a-save', 'a-print', 'a-new']) $(id).hidden = true;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch {}
+  $('name').focus();
+});
+
+function renderTitle() {
+  const i = S.input, ch = S.chart;
+  $('chart-name').textContent = i.name || 'Your chart';
+  const [y, mo, d] = i.date.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, mo - 1, d)).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const P = Object.fromEntries(ch.points.map(p => [p.key, p]));
+  const b3 = [ch.houses ? `${SIGNS[signIdx(ch.houses.asc)]} rising` : null, `Sun in ${SIGNS[signIdx(P.sun.lon)]}`, `Moon in ${SIGNS[signIdx(P.moon.lon)]}`].filter(Boolean).join(', ');
+  $('chart-meta').textContent = `${dt}${i.notime ? ', time unknown' : ', ' + i.time} · ${i.place} · ${b3}`;
+  const warns = [];
+  if (i.notime) warns.push('No birth time, so the chart is set for noon. The rising sign and houses are left out, and the Moon may be up to 7° from where it is shown.');
+  if (ch.conv.note === 'nonexistent') warns.push('The clocks went forward that night, so this time never happened locally. Check the birth record.');
+  if (ch.conv.note === 'ambiguous') warns.push('The clocks went back that night, so this time happened twice. The first occurrence is used.');
+  $('warn').hidden = !warns.length; $('warn').textContent = warns.join(' ');
+}
+
+// ---------- rendering ----------
+function render() {
+  const name = S.input.name || 'this chart';
+  const wheelMode = S.guide >= 0 ? GUIDE_MODE[S.guide] : S.mode;
+  const order = ['discover', 'explore', 'study'], at = order.indexOf(wheelMode);
+  document.querySelectorAll('#modes button').forEach((b, i) => { b.classList.toggle('done', i < at); b.setAttribute('aria-pressed', String(i === at)); if (i === at) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+  document.querySelectorAll('#modes .arr').forEach((a, i) => a.classList.toggle('done', i < at));
+  $('wheel').innerHTML = renderWheelV2(S.chart, { mode: wheelMode, sel: S.guide >= 0 ? null : S.sel, title: `Birth chart for ${name}`, focus: wheelFocus() });
+  $('key').hidden = wheelMode === 'discover';
+  $('tabs').hidden = S.guide >= 0;
+  document.querySelectorAll('#tabs button').forEach(b => { b.setAttribute('aria-selected', String(b.dataset.tab === S.tab)); b.tabIndex = b.dataset.tab === S.tab ? 0 : -1; });
+  $('pane').setAttribute('aria-labelledby', S.guide >= 0 ? '' : 'tab-' + S.tab);
+  $('pane').innerHTML = S.guide >= 0 ? guideHTML() : { reading: readingHTML, chart: chartHTML, themes: themesHTML, begin: beginHTML }[S.tab]();
+  $('pane').scrollTop = 0;
+}
+
+const P = () => Object.fromEntries(S.chart.points.map(p => [p.key, p]));
+function focusData(k) {
+  const ch = S.chart, p = P()[k];
+  if (k === 'asc') {
+    const si = signIdx(ch.houses.asc);
+    return { title: `${SIGNS[si]} rising`, pos: `${fmtPos(ch.houses.asc)} · Ascendant`, what: `The Ascendant: ${PLANET_INFO.asc.what}.`, how: `In ${SIGNS[si]}: ${SIGN_INFO[si].how}.`,
+      where: 'On the 1st house cusp: the body, the face, first impressions.', body: RISING[si], convos: [] };
+  }
+  const si = signIdx(p.lon), info = PLANET_INFO[k];
+  let body;
+  if (IN_SIGN[k]) body = IN_SIGN[k][si];
+  else if (k === 'node') body = `Your path leads ${SIGN_INFO[si].how}. It may feel unfamiliar at first; that is how you know it is the direction of growth.`;
+  else body = `The tender place here is coloured ${SIGN_INFO[si].how}. What hurts in you is also where you can help others.`;
+  if (info.generational) body += ` ${p.name} moves slowly, so its sign is shared with everyone born within a few years of you.`;
+  if (p.house && IN_HOUSE[k]) body += ' ' + IN_HOUSE[k][p.house - 1];
+  const convos = ch.aspects.filter(a => a.a.key === k || a.b.key === k).map(a => { const o = a.a.key === k ? a.b : a.a; return { k: o.key, text: `${VERB[a.type.key]} ${o.key === 'sun' || o.key === 'moon' ? 'the ' : ''}${o.name}`, orb: fmtOrb(a.orb), meaning: ASPECT_INFO[a.type.key].meaning }; });
+  return { title: `${p.name} in ${SIGNS[si]}`, pos: `${fmtPos(p.lon)}${p.retro ? ', retrograde' : ''}${p.house ? ` · ${ORD(p.house)} house` : ''}`,
+    what: `${k === 'node' ? 'The North Node' : k === 'sun' || k === 'moon' ? 'The ' + p.name : p.name}: ${info.what}.`, how: `In ${SIGNS[si]}: ${SIGN_INFO[si].how}.`,
+    where: p.house ? `In the ${ORD(p.house)} house: ${HOUSE_INFO[p.house - 1].where}.` : 'Houses need a birth time.', body, convos };
+}
+function visibleKeys() {
+  const ks = S.chart.points.map(p => p.key).filter(k => S.mode === 'study' || k !== 'chiron');
+  return S.mode === 'discover' ? ['sun', 'moon', ...(S.chart.houses ? ['asc'] : [])] : (S.chart.houses ? ['asc', ...ks] : ks);
+}
+function readingHTML() {
+  const ch = S.chart, p = P();
+  const b3 = [['sun', 'Core', `Sun in ${SIGNS[signIdx(p.sun.lon)]}`], ['moon', 'Needs', `Moon in ${SIGNS[signIdx(p.moon.lon)]}`]];
+  if (ch.houses) b3.push(['asc', 'Way in', `${SIGNS[signIdx(ch.houses.asc)]} rising`]);
+  let out = `<div class="b3" style="grid-template-columns:repeat(${b3.length},minmax(0,1fr))">${b3.map(([k, r, t]) => `<button type="button" data-sel="${k}" aria-pressed="${S.sel === k}"><small>${r}</small><b>${t}</b></button>`).join('')}</div>`;
+  if (!S.sel) {
+    out += `<div style="display:flex;flex-direction:column;gap:14px"><span class="eyebrow red">Start here</span>
+      <p class="body" style="font-size:21px;line-height:1.45">Your chart is a map of the sky at your moment of birth. ${ch.houses ? 'Three points matter most to begin with: the Sun, the Moon and the rising sign.' : 'Two points matter most to begin with: the Sun and the Moon. Without a birth time, the rising sign can’t be known.'}</p>
+      <p class="muted" style="margin:0;font-size:16px">Choose one above, or any planet on the wheel, to read about it.</p><div style="display:flex;flex-wrap:wrap;gap:10px"><button type="button" class="btn primary" data-go="themes">Next: your creative themes</button><button type="button" class="btn" data-go="chart">All placements</button></div></div>`;
+    return out;
+  }
+  const f = focusData(S.sel), keys = visibleKeys(), i = keys.indexOf(S.sel);
+  out += `<div class="focus" aria-live="polite" style="display:flex;flex-direction:column;gap:14px">
+    <div class="headrow"><span class="eyebrow red">In focus</span><span class="draft">Draft</span></div>
+    <div><h2>${f.title}</h2><p class="pos">${f.pos}</p></div>
+    <dl class="www"><dt>What</dt><dd>${f.what}</dd><dt>How</dt><dd>${f.how}</dd><dt>Where</dt><dd>${f.where}</dd></dl>
+    <p class="body">${f.body}</p>
+    ${f.convos.length ? `<div class="convos"><span class="lbl">In conversation with</span>${f.convos.map(c => `<button type="button" data-sel="${c.k}">${g(c.k)}<span>${c.text}</span><span class="orb">${c.orb}</span><span class="aspmeaning">${c.meaning}</span></button>`).join('')}</div>` : ''}
+    <div class="stepper"><button type="button" class="btn" data-sel="${keys[(i - 1 + keys.length) % keys.length]}" aria-label="Previous placement">Previous</button><button type="button" class="btn" data-sel="${keys[(i + 1) % keys.length]}" aria-label="Next placement">Next</button></div>
+  </div>`;
+  return out;
+}
+function chartHTML() {
+  const ch = S.chart, study = S.mode === 'study';
+  const rows = ch.points.filter(p => study || p.key !== 'chiron').map(p => `<button type="button" class="prow" data-sel="${p.key}" aria-pressed="${S.sel === p.key}">${g(p.key)}<span>${p.name}</span><span>${fmtPos(p.lon)}${p.retro ? ' r' : ''}</span><span>${p.house || '–'}</span></button>`);
+  if (ch.houses) rows.unshift(`<button type="button" class="prow" data-sel="asc" aria-pressed="${S.sel === 'asc'}"><svg class="g" viewBox="-11 -11 22 22" aria-hidden="true"><path d="M0,9 L0,-9 M-6,-3 L0,-9 L6,-3"/></svg><span>Ascendant</span><span>${fmtPos(ch.houses.asc)}</span><span></span></button>`);
+  if (ch.houses && study) rows.push(`<div class="prow" style="cursor:default"><span></span><span>Midheaven</span><span>${fmtPos(ch.houses.mc)}</span><span></span></div>`);
+  let out = `<div><div class="tblhead"><h2>Planets</h2><span>r = retrograde · number = house</span></div>${rows.join('')}</div>`;
+  if (ch.houses) {
+    out += `<div><div class="tblhead"><h2>Houses</h2><span>${study ? 'Cusps · ' + HOUSE_SYSTEMS[ch.houses.system] : 'Areas of life'}</span></div><div class="hgrid">${ch.houses.cusps.map((c, i) => `<div><span>${i + 1}</span><span>${study ? fmtPos(c) : HOUSE_INFO[i].area}</span></div>`).join('')}</div></div>`;
+  } else out += `<p class="muted" style="margin:0;font-size:16px">Houses need a birth time, so they are left out of this chart.</p>`;
+  if (study) {
+    out += `<div><div class="tblhead"><h2>Aspects</h2><span>Tightest first · orb</span></div><div class="alist">${ch.aspects.map(a => `<div><span>${a.a.name} ${a.type.name.toLowerCase()} ${a.b.name}</span><span class="muted">${fmtOrb(a.orb)}</span></div>`).join('')}</div></div>`;
+    const src = { zone: 'standard time', lmt: 'local mean time', 'legal-mean': 'legal mean time' }[ch.conv.source];
+    out += `<div><div class="tblhead"><h2>Settings</h2><span>Tropical zodiac</span></div>
+      <div class="settings" style="margin-top:10px"><label>House system<select id="s-hsys">${Object.entries(HOUSE_SYSTEMS).map(([k, n]) => `<option value="${k}"${k === S.houseSystem ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+      <label>Lunar node<select id="s-node"><option value="true"${S.nodeType === 'true' ? ' selected' : ''}>True node</option><option value="mean"${S.nodeType === 'mean' ? ' selected' : ''}>Mean node</option></select></label></div>
+      <p class="muted" style="margin:10px 0 0;font-size:14px">${S.input.notime ? 'Set for noon, birth time unknown.' : `${formatOffset(ch.conv.offsetSeconds)}, ${src}.`} ${ch.houses && ch.houses.system !== ch.houses.requested ? 'Porphyry used: this house system can’t be drawn this far north or south.' : ''}</p></div>`;
+  }
+  return out;
+}
+function themesHTML() {
+  return `<div class="headrow"><span class="eyebrow red">Three threads to follow</span><span class="draft">Draft method and copy</span></div>
+    <p class="muted" style="margin:0;font-size:16px">Patterns your chart repeats. Each is a direction for your work, not a description of you.</p>
+    ${S.themes.map(t => `<article class="theme"><div class="t"><span class="n">${t.n}</span><h3>${t.title}</h3><span class="glyphs">${t.glyphs.map(g).join('')}</span></div>
+      <p>${t.body}</p><p class="from">From: ${t.signals.join(' · ')}</p><p class="prompt">${t.prompts[0]}</p></article>`).join('')}
+    <details class="method"><summary>How these are chosen</summary><p style="margin:8px 0 0">The explorer looks for patterns in your chart: planets gathered in one sign or house, the tightest aspects to your personal planets, the slow planets touching them, your strongest or missing element, planets on the angles, the Moon’s phase when you were born, and your rising sign. Each pattern is scored by how strong it is, and the three strongest from different families are shown. This method is a draft for Madeleine to refine.</p></details>`;
+}
+function beginHTML() {
+  const list = invitations(S.themes), inv = list[S.invite % list.length], kept = store.get('a4a-v2-kept', []);
+  return `<div class="invite"><div class="headrow"><span class="eyebrow">An invitation for this week</span><span class="draft">Draft</span></div>
+    <h2>${inv.text}</h2><p>From the theme “${inv.from}”.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px"><button type="button" class="btn primary" id="keep">Keep this invitation</button><button type="button" class="btn" id="another">Another one</button></div>
+    <span class="status" role="status" id="keep-status"></span></div>
+    ${kept.length ? `<div class="kept"><span class="lbl">Kept invitations</span><ul>${kept.slice(0, 5).map(k => `<li>${esc(k.text)}</li>`).join('')}</ul></div>` : ''}
+    <div class="cosmic"><img src="becoming-cosmic-chalk.svg" alt="becoming cosmic">
+    <p>Your chart is where the practice starts. In becoming cosmic, members bring their charts to a weekly prompt and a monthly gathering, and share what they make. Doors open on 24 November.</p>
+    <a class="btn" href="${JOIN_URL}" target="_blank" rel="noopener">Join the waitlist</a></div>`;
+}
+// What stays at full strength on the wheel: a guided-reading step, or a selected placement and
+// everything it touches (its sign, its house, the planets it aspects and the lines between them).
+const NONE = new Set();
+function guideFacts() {
+  const ch = S.chart, p = P();
+  const keys = ch.points.filter(x => x.key !== 'chiron').map(x => x.key);
+  const sunS = signIdx(p.sun.lon), moonS = signIdx(p.moon.lon), ascS = ch.houses ? signIdx(ch.houses.asc) : null;
+  const byHouse = {};
+  if (ch.houses) for (const k of keys) if (k !== 'node') (byHouse[p[k].house] ||= []).push(k);
+  const topHouses = Object.entries(byHouse).sort((x, y) => y[1].length - x[1].length || x[0] - y[0]).slice(0, 4);
+  const lines = ch.aspects.filter(a => a.type.key !== 'conjunction' && keys.includes(a.a.key) && keys.includes(a.b.key)).slice(0, 3);
+  return { p, keys, sunS, moonS, ascS, byHouse, topHouses, lines };
+}
+function wheelFocus() {
+  const ch = S.chart;
+  if (S.guide >= 0) {
+    const g = guideFacts();
+    if (S.guide === 0) return { signs: new Set([g.sunS, g.moonS, ...(g.ascS !== null ? [g.ascS] : [])]), planets: new Set(['sun', 'moon']), houses: NONE, aspects: () => false, angles: new Set(['AC']), ring: new Set(['sun', 'moon']) };
+    if (S.guide === 1) return { signs: new Set([...g.keys.map(k => signIdx(g.p[k].lon)), ...(g.ascS !== null ? [g.ascS] : [])]), planets: 'all', houses: NONE, aspects: () => false, angles: new Set(['AC']) };
+    if (S.guide === 2) return { signs: NONE, planets: 'all', houses: new Set(Object.keys(g.byHouse).map(Number)), aspects: () => false, angles: 'all' };
+    const ks = new Set(g.lines.flatMap(a => [a.a.key, a.b.key]));
+    return { signs: NONE, planets: ks, houses: NONE, aspects: a => g.lines.includes(a), angles: NONE };
+  }
+  if (!S.sel) return null;
+  if (S.sel === 'asc') {
+    const ks = ch.points.filter(x => x.house === 1).map(x => x.key);
+    return { signs: new Set([signIdx(ch.houses.asc)]), houses: new Set([1]), planets: new Set(ks), aspects: () => false, angles: new Set(['AC']) };
+  }
+  const p = P()[S.sel], rel = new Set([S.sel]);
+  ch.aspects.forEach(a => { if (a.a.key === S.sel || a.b.key === S.sel) { rel.add(a.a.key); rel.add(a.b.key); } });
+  return { signs: new Set([signIdx(p.lon)]), houses: p.house ? new Set([p.house]) : NONE, planets: rel, aspects: a => a.a.key === S.sel || a.b.key === S.sel, angles: NONE };
+}
+const EL_SWATCH = ['#EBCDC6', '#D5DAC8', '#EEE7D3', '#D8D4E2'];
+function guideHTML() {
+  const st = GUIDE[S.guide], ch = S.chart, F = guideFacts(), p = F.p;
+  const row = (sw, head, body) => `<div class="grow">${sw}<div><b>${head}</b><span>${body}</span></div></div>`;
+  const sq = c => `<i class="sw" style="background:${c}"></i>`;
+  let tries;
+  if (st.layer === 'planets') {
+    tries = row(g('sun'), `Sun in ${SIGNS[F.sunS]}`, 'Your core: what you are here to express.')
+      + row(g('moon'), `Moon in ${SIGNS[F.moonS]}`, 'Your needs: what makes you feel at home.')
+      + (F.ascS !== null ? row(`<svg class="g" viewBox="-11 -11 22 22" aria-hidden="true"><path d="M0,9 L0,-9 M-6,-3 L0,-9 L6,-3"/></svg>`, `${SIGNS[F.ascS]} rising`, 'Your way in: the sign on the horizon, marked AC.') : row('', 'Rising sign unknown', 'It needs a birth time.'));
+    tries = `<span class="lbl">Your big three, coloured on the wheel</span>${tries}`;
+  } else if (st.layer === 'signs') {
+    const names = ['Fire', 'Earth', 'Air', 'Water'], signsOf = e => [0, 1, 2].map(i => SIGNS[e + i * 4]).join(', ');
+    tries = `<span class="lbl">The four elements in your chart</span>` + names.map((n, e) => {
+      const ks = F.keys.filter(k => signIdx(p[k].lon) % 4 === e).map(k => p[k].name);
+      return row(sq(EL_SWATCH[e]), `${n} · ${signsOf(e)}`, ks.length ? ks.join(', ') : 'None of your planets');
+    }).join('') + `<span class="muted" style="font-size:15px">Your Sun is in ${SIGNS[F.sunS]}: you express yourself ${SIGN_INFO[F.sunS].how}.</span>`;
+  } else if (st.layer === 'houses') {
+    tries = ch.houses ? `<span class="lbl">Where your planets gather</span>` + F.topHouses.map(([h, ks]) => row(`<span class="hn">${h}</span>`, `${ORD(+h)} house · ${HOUSE_INFO[h - 1].area}`, ks.map(k => p[k].name).join(', '))).join('')
+      : 'Without a birth time the houses can’t be drawn, so this chart leaves them out. Everything else still holds.';
+  } else {
+    tries = F.lines.length ? `<span class="lbl">Your three strongest lines</span>` + F.lines.map(a => row(`<svg width="30" height="6" aria-hidden="true" style="flex:none;margin-top:9px"><line x1="0" y1="3" x2="30" y2="3" stroke="${a.type.tone === 'hard' ? '#C32414' : '#5E6B78'}" stroke-width="1.6"${a.type.key === 'trine' ? ' stroke-dasharray="5 4"' : a.type.key === 'sextile' ? ' stroke-dasharray="1.5 4" stroke-linecap="round"' : ''}/></svg>`, `${a.a.name} ${a.type.name.toLowerCase()} ${a.b.name}`, `${ASPECT_INFO[a.type.key].tone} · ${fmtOrb(a.orb)} from exact`)).join('')
+      : 'Your chart has few lines. Planets that stand alone speak in their own voice.';
+  }
+  const last = S.guide === GUIDE.length - 1;
+  return `<div class="guide">
+    <ol class="gsteps" aria-label="Steps">${GUIDE.map((s, i) => `<li${i === S.guide ? ' aria-current="step"' : i < S.guide ? ' class="done"' : ''}>${['Planets', 'Signs', 'Houses', 'Lines'][i]}</li>`).join('')}</ol>
+    <div class="headrow"><span class="eyebrow red">Guided reading · ${S.guide + 1} of ${GUIDE.length}</span><span class="draft">Draft</span></div>
+    <h2>${st.title}</h2><p class="gbody">${st.body}</p>
+    <div class="tryit">${tries}</div>
+    <div class="gnav">${S.guide > 0 ? '<button type="button" class="btn" id="g-back">Back</button>' : ''}
+      <button type="button" class="btn primary" id="g-next">${last ? 'See my whole chart in Study' : 'Next: ' + ['signs, the how', 'houses, the where', 'the lines'][S.guide]}</button>
+      <button type="button" class="linkish" id="g-skip">Skip to my chart</button></div></div>`;
+}
+
+// ---------- interaction ----------
+function select(k) {
+  S.sel = S.sel === k && S.tab === 'reading' ? null : k; S.tab = 'reading';
+  if (S.mode === 'discover' && !['sun', 'moon', 'asc'].includes(k)) S.mode = 'explore';
+  render();
+}
+$('wheel').addEventListener('click', e => { if (S.guide >= 0) return; const gp = e.target.closest('.w-planet'); if (gp) { e.stopPropagation(); select(gp.dataset.key); } });
+// Clicking anywhere outside the reading panel and the controls returns to the full chart; so does Escape.
+document.addEventListener('click', e => {
+  if (S.guide >= 0 || !S.sel || $('explorer').hidden) return;
+  if (e.target.closest('.w-planet, button, a, input, select, label, dialog, .internal, .panel, summary')) return;
+  S.sel = null; render();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.sel && S.guide < 0 && !document.querySelector('dialog[open]')) { S.sel = null; render(); } });
+$('wheel').addEventListener('keydown', e => { const gp = e.target.closest('.w-planet'); if (gp && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); select(gp.dataset.key); requestAnimationFrame(() => { const n = $('wheel').querySelector(`.w-planet[data-key="${gp.dataset.key}"]`); if (n) n.focus(); }); } });
+$('pane').addEventListener('click', e => {
+  const b = e.target.closest('[data-sel]'); if (b) { const k = b.dataset.sel; S.sel = k; S.tab = 'reading'; if (S.mode === 'discover' && !['sun', 'moon', 'asc'].includes(k)) S.mode = 'explore'; render(); return; }
+  if (e.target.id === 'g-next') { if (S.guide === GUIDE.length - 1) { S.guide = -1; S.sel = null; S.mode = 'study'; S.tab = 'reading'; } else S.guide++; render(); }
+  if (e.target.id === 'g-back') { S.guide--; render(); }
+  if (e.target.id === 'g-skip') { S.guide = -1; S.sel = null; S.mode = 'explore'; S.tab = 'reading'; render(); }
+  const go = e.target.closest('[data-go]'); if (go) { S.tab = go.dataset.go; render(); }
+  if (e.target.id === 'another') { S.invite++; render(); }
+  if (e.target.id === 'keep') {
+    const list = invitations(S.themes), inv = list[S.invite % list.length], kept = store.get('a4a-v2-kept', []);
+    if (!kept.some(k => k.text === inv.text)) kept.unshift({ text: inv.text, at: new Date().toISOString().slice(0, 10) });
+    store.set('a4a-v2-kept', kept.slice(0, 20)); render(); $('keep-status').textContent = 'Kept in this browser.';
+  }
+});
+$('pane').addEventListener('change', e => {
+  if (e.target.id === 's-hsys') { S.houseSystem = e.target.value; calc(); render(); }
+  if (e.target.id === 's-node') { S.nodeType = e.target.value; calc(); render(); }
+});
+$('tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) { S.tab = b.dataset.tab; render(); } });
+$('tabs').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const order = ['reading', 'chart', 'themes', 'begin'], i = order.indexOf(S.tab);
+  S.tab = order[(i + (e.key === 'ArrowRight' ? 1 : 3)) % 4]; render(); $('tab-' + S.tab).focus();
+});
+$('modes').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (b) { S.mode = b.dataset.mode; S.guide = -1; if (S.mode === 'discover' && S.sel && !['sun', 'moon', 'asc'].includes(S.sel)) S.sel = null; render(); } });
+$('open-guide').addEventListener('click', () => { S.guide = 0; render(); });
+
+// ---------- saved charts ----------
+function renderSaved() {
+  const l = store.get('a4a-v2-saved', []);
+  $('saved-list').innerHTML = l.length ? l.map((s, i) => `<li><button type="button" class="open" data-open="${i}">${esc(s.name || 'Untitled chart')}<small>${esc(s.date)}${s.notime ? '' : ' ' + esc(s.time)} · ${esc(s.place)}</small></button><button type="button" class="btn" data-rm="${i}" aria-label="Remove ${esc(s.name || 'chart')}">Remove</button></li>`).join('')
+    : '<li class="muted">Charts you save appear here.</li>';
+}
+$('a-save').addEventListener('click', () => {
+  const l = store.get('a4a-v2-saved', []).filter(s => JSON.stringify(s) !== JSON.stringify(S.input));
+  l.unshift(S.input); const ok = store.set('a4a-v2-saved', l.slice(0, 24));
+  $('a-save').textContent = ok ? 'Saved' : 'Could not save'; setTimeout(() => $('a-save').textContent = 'Save', 1600);
+});
+$('a-saved').addEventListener('click', () => { renderSaved(); $('dlg-saved').showModal(); });
+$('saved-list').addEventListener('click', e => {
+  const l = store.get('a4a-v2-saved', []), o = e.target.closest('[data-open]'), r = e.target.closest('[data-rm]');
+  if (o) { const s = l[+o.dataset.open]; $('dlg-saved').close(); fillForm(s); open(s, { guide: false }); }
+  if (r) { l.splice(+r.dataset.rm, 1); store.set('a4a-v2-saved', l); renderSaved(); }
+});
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+
+// ---------- print and card ----------
+const val = name => document.querySelector(`input[name="${name}"]:checked`).value;
+const printOpts = () => ({ size: val('size'), orientation: val('orientation'), ink: val('ink'), content: val('content'), file: val('file'), logo: $('b-logo').checked, sigil: $('b-sigil').checked });
+function renderPrint() { if (!assets) return; $('poster-preview').innerHTML = posterSVG(S.chart, S.input.name, printOpts(), assets).svg; $('card-preview').innerHTML = cardSVG(S.chart, S.input.name, assets); }
+function setView(v) { for (const k of ['print', 'card']) { $('v-' + k).setAttribute('aria-selected', String(k === v)); $('view-' + k).hidden = k !== v; } $('dl-status').textContent = ''; }
+document.querySelector('.dview').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) setView(b.dataset.view); });
+$('print-opts').addEventListener('change', renderPrint);
+$('a-print').addEventListener('click', async () => { $('dlg-print').showModal(); if (!assets) { $('poster-preview').innerHTML = '<span class="status">Preparing the preview…</span>'; await loadAssets(); } renderPrint(); });
+async function saveFile(filename, blob) {
+  const dl = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('downloads').catch(() => null) : null;
+  if (dl) { await dl.save({ filename, data: blob }); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+}
+async function run(btn, work) {
+  btn.disabled = true; $('dl-status').textContent = 'Preparing the file…';
+  try { await document.fonts.ready; await work(); $('dl-status').textContent = ''; }
+  catch (e) { $('dl-status').textContent = e && e.code === 'declined' ? 'Download cancelled.' : 'The file could not be made. Try again, or try the other file type.'; console.error(e); }
+  finally { btn.disabled = false; }
+}
+$('dl-poster').addEventListener('click', e => run(e.currentTarget, async () => {
+  const o = printOpts(), copy = inlineCopy($('poster-preview').querySelector('svg'));
+  const [pw, ph] = PAPER[o.size], [W, H] = o.orientation === 'landscape' ? [ph, pw] : [pw, ph];
+  const base = `${slug(S.input.name)}-chart-${o.size}-${o.orientation}${o.ink === 'black' ? '-black' : ''}`;
+  $('stage').appendChild(copy);
+  try { if (o.file === 'pdf') await saveFile(base + '.pdf', await toPDF(copy, W, H, o.orientation)); else await saveFile(base + '.png', await toPNG(copy, Math.round(W / 25.4 * 300), Math.round(H / 25.4 * 300))); }
+  finally { copy.remove(); }
+}));
+$('dl-card').addEventListener('click', e => run(e.currentTarget, async () => {
+  const copy = inlineCopy($('card-preview').querySelector('svg'));
+  await saveFile(`${slug(S.input.name)}-introduction-card.png`, await toPNG(copy, 1080, 1080));
+}));
+async function dataURL(url) { const b = await (await fetch(url)).blob(); return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); }
+async function loadAssets() {
+  const [sigil, sigilBlack, logo] = await Promise.all([dataURL('../sigil.png'), dataURL('../sigil-black.png'), fetch('../src/logotype-paths.json').then(r => r.json())]);
+  assets = { logotypePaths: logo.paths, logotypeViewBox: logo.viewBox, sigil, sigilBlack, sigilRatio: 462 / 520 };
+}
+
+// ---------- embedding ----------
+if (window.parent !== window && 'ResizeObserver' in window) {
+  let last = 0;
+  new ResizeObserver(() => { const h = Math.ceil(document.documentElement.scrollHeight); if (h !== last) { last = h; window.parent.postMessage({ type: 'a4a-chart-height', height: h }, '*'); } }).observe(document.body);
+}
+
+// ---------- start ----------
+try {
+  swe = new SwissEph(); await swe.initSwissEph();
+  let fromHash = null;
+  try { if (location.hash.length > 3) fromHash = JSON.parse(decodeURIComponent(location.hash.slice(1))); } catch {}
+  if (fromHash && fromHash.date && fromHash.tz) { fillForm(fromHash); open(fromHash, { guide: false }); }
+  loadFonts().catch(() => {});
+} catch (err) {
+  $('formerr').hidden = false; $('formerr').textContent = 'The calculation engine didn’t load. Reload the page to try again.'; console.error(err);
+}
+</script>
+</body>
+</html>

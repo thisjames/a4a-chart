@@ -19,6 +19,8 @@ A birth chart generator for Astrology for Artists and Becoming Cosmic. Everythin
 
 ## Page addresses
 
+- `explorer/` is the Chart Explorer (version 2), copied from the `v2` branch with `python3 tools/build-explorer.py explorer` (run on `v2`). It shares the engine, ephemeris, places, fonts and sigils with version 1.
+
 - `index.html` shows the full prototype with its notes.
 - `index.html?embed=1` hides the prototype notes, for embedding on the website. Add `&header=0` to hide the header too.
 - `index.html?embed=1&mode=free` fixes the free version.
