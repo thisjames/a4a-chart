@@ -1,4 +1,5 @@
-"""Build index.html from src/page.src.html.
+"""Build v1.html (the version 1 Chart Studio page) from src/page.src.html.
+On the v2 branch, index.html is the Chart Explorer and is edited directly.
 
 Fills the placeholders: {{FONT}} (1790 Royal Printing as base64, from fonts/),
 {{LOGO}} and {{LOGO_JSON}} (the AfA logotype, from src/logotype-paths.json) and
@@ -17,5 +18,5 @@ out = (src.replace('{{FONT}}', font).replace('{{LOGO}}', logo)
           .replace('{{LOGO_JSON}}', json.dumps({'viewBox': lp['viewBox'], 'paths': lp['paths']}))
           .replace('{{ACC}}', json.dumps(acc, ensure_ascii=False)))
 assert '{{' not in out, 'unfilled placeholder'
-(root / 'index.html').write_text(out)
-print('index.html written,', len(out), 'characters')
+(root / 'v1.html').write_text(out)
+print('v1.html written,', len(out), 'characters')

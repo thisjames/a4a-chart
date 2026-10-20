@@ -1,7 +1,8 @@
 // A4A Chart Studio — print-ready chart and introduction card.
 // Builds each layout as an SVG in millimetres (print) or pixels (card), then turns it into a
 // vector PDF (jsPDF + svg2pdf.js) or a PNG (canvas), entirely in the visitor's browser.
-import { renderWheel, fmtPos, degInSign, GLYPHS, SIGNS, BODIES, formatOffset, norm } from './chart-core.js';
+import { renderWheelV2 } from './wheel-v2.js';
+import { fmtPos, degInSign, GLYPHS, SIGNS, BODIES, formatOffset, norm } from './chart-core.js';
 
 export const PAPER = { A5: [148, 210], A4: [210, 297], A3: [297, 420] };
 const FONT_FILES = { royal: 'fonts/RoyalPrinting.ttf', crimson: 'fonts/CrimsonPro-400.ttf', crimsonBold: 'fonts/CrimsonPro-600.ttf' };
@@ -33,7 +34,7 @@ export function loadPdfLibs() {
 
 // ---------- pieces ----------
 function wheelGroup(chart, x, y, size) {
-  const svg = renderWheel(chart, { frame: 'tight' });
+  const svg = renderWheelV2(chart, { mode: 'print' });
   const vb = svg.match(/viewBox="([^"]+)"/)[1].split(' ').map(Number);
   const inner = svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '').replace(/<title>[^<]*<\/title>/g, '');
   const k = size / vb[2];
@@ -150,7 +151,7 @@ export function posterSVG(chart, name, o, assets) {
 export function cardSVG(chart, name, assets) {
   const S = 1080, L = chartLines(chart, name), out = [];
   out.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" data-ink="red">`);
-  out.push(`<rect x="0" y="0" width="${S}" height="${S}" fill="#fcf5f7"/>`);
+  out.push(`<rect x="0" y="0" width="${S}" height="${S}" fill="#FAF3EE"/>`);
   out.push(wheelGroup(chart, 210, 50, 660));
   out.push(t(S / 2, 800, 68, L.name, { family: DISPLAY, anchor: 'middle' }));
   out.push(t(S / 2, 856, 24, L.big3.toUpperCase(), { family: DISPLAY, anchor: 'middle', color: '#c32414', spacing: 5 }));

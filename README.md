@@ -1,4 +1,20 @@
-# Chart Studio (prototype)
+# Chart Explorer (v2 prototype)
+
+This is the `v2` branch: the Chart Explorer, a guided, interactive birth chart with draft readings, creative themes and weekly invitations. Version 1 (Chart Studio) is on the `v1` branch, and its page is rebuilt here as `v1.html`.
+
+## What is new in v2
+
+| Path | What it is |
+| --- | --- |
+| `index.html` | The Chart Explorer page (edited directly; no build step) |
+| `wheel-v2.js` | The v2 wheel: Discover, Explore, Study and print views, clickable planets, layers for the guided reading |
+| `readings.js` | Draft readings for Madeleine: every planet in every sign and house, rising signs, aspects, guided-reading copy |
+| `themes.js` | Draft creative-themes method and invitations: finds patterns in the chart, scores them, picks three |
+| `becoming-cosmic-chalk.svg` | The becoming cosmic logo in chalk (brand asset, not covered by the AGPL) |
+
+The bar along the bottom of the page is for internal testing: it switches the background and hides the draft tags. Add `?internal=0` to hide it.
+
+## Version 1 notes
 
 A birth chart generator for Astrology for Artists and Becoming Cosmic. Everything is calculated in the visitor's browser, so the site is a folder of static files with no server.
 
@@ -15,7 +31,7 @@ A birth chart generator for Astrology for Artists and Becoming Cosmic. Everythin
 | `test/` | Accuracy and time-zone checks (run with Node 18+) |
 | `squarespace-snippets.html` | Code to paste into Squarespace code blocks |
 | `src/page.src.html`, `src/logotype-paths.json` | The page's editable source, with placeholders for the font, logotype and accuracy table |
-| `tools/build.py` | Builds `index.html` from `src/`: edit the source, then run `python3 tools/build.py` |
+| `tools/build.py` | Builds `v1.html` (version 1) from `src/`: edit the source, then run `python3 tools/build.py` |
 
 ## Page addresses
 
